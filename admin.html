@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Society Document Management System</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">    
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:#f4f6f9;
+display:flex;
+color:#333;
+}
+
+:root{
+--primary:#0f4c3a;
+--secondary:#16624d;
+--gold:#c89f65;
+--light:#f7f7f7;
+--white:#ffffff;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:260px;
+height:100vh;
+background:linear-gradient(
+180deg,
+#0f4c3a,
+#0b382b
+);
+
+position:fixed;
+left:0;
+top:0;
+color:white;
+overflow-y:auto;
+}
+
+.logo{
+padding:25px;
+font-size:20px;
+font-weight:700;
+border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.menu{
+padding:20px;
+}
+
+.menu a{
+display:block;
+padding:13px 15px;
+text-decoration:none;
+color:white;
+border-radius:10px;
+margin-bottom:8px;
+transition:.3s;
+}
+
+.menu a:hover{
+background:rgba(255,255,255,.1);
+}
+
+/* MAIN */
+
+.main{
+margin-left:260px;
+width:calc(100% - 260px);
+padding:30px;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:30px;
+}
+
+.header h1{
+color:var(--primary);
+}
+
+.admin{
+background:white;
+padding:10px 20px;
+border-radius:30px;
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+/* CARDS */
+
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+margin-bottom:35px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:16px;
+box-shadow:0 5px 20px rgba(0,0,0,.06);
+}
+
+.card h2{
+font-size:38px;
+color:var(--primary);
+margin-bottom:10px;
+}
+
+.card p{
+color:#666;
+}
+
+/* SECTION */
+
+.section{
+background:white;
+padding:25px;
+border-radius:16px;
+margin-bottom:25px;
+box-shadow:0 5px 20px rgba(0,0,0,.06);
+}
+
+.section h2{
+color:var(--primary);
+margin-bottom:20px;
+}
+
+/* SEARCH */
+
+.filters{
+display:grid;
+grid-template-columns:2fr 1fr 1fr 1fr;
+gap:15px;
+margin-bottom:25px;
+}
+
+input,
+select{
+padding:12px;
+border:1px solid #ddd;
+border-radius:10px;
+}
+
+.btn{
+background:var(--primary);
+color:white;
+border:none;
+padding:12px;
+border-radius:10px;
+cursor:pointer;
+font-weight:600;
+}
+
+.btn:hover{
+background:var(--secondary);
+}
+
+/* TABLE */
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#f5f5f5;
+padding:15px;
+text-align:left;
+}
+
+td{
+padding:15px;
+border-bottom:1px solid #eee;
+}
+
+.status{
+background:#e7f7ef;
+color:#0f4c3a;
+padding:5px 12px;
+border-radius:20px;
+display:inline-block;
+font-size:12px;
+}
+
+/* UPLOAD */
+
+.upload-box{
+border:2px dashed var(--primary);
+padding:40px;
+text-align:center;
+border-radius:15px;
+background:#fafafa;
+}
+
+.upload-box h3{
+margin-bottom:10px;
+}
+
+/* SCANNER */
+
+.scanner{
+display:grid;
+grid-template-columns:1.2fr 1fr;
+gap:25px;
+}
+
+.preview{
+height:350px;
+background:#f2f2f2;
+border-radius:15px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:18px;
+color:#777;
+}
+
+.control-panel{
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.range{
+width:100%;
+}
+
+/* FOOTER */
+
+.footer{
+text-align:center;
+padding:20px;
+color:#777;
+}
+
+@media(max-width:900px){
+
+.sidebar{
+display:none;
+}
+
+.main{
+margin-left:0;
+width:100%;
+}
+
+.filters{
+grid-template-columns:1fr;
+}
+
+.scanner{
+grid-template-columns:1fr;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<div class="logo">
+📂 Society Archive
+</div>
+
+<div class="menu">
+
+<a href="#dashboard">Dashboard</a>
+<a href="#documents">Documents</a>
+<a href="#upload-records">Upload Records</a>
+<a href="#scanner">Scanner</a>
+<a href="#categories">Categories</a>
+<a href="#reports">Reports</a>
+<a href="#settings">Settings</a>
+
+</div>
+
+</div>
+
+<div class="main">
+
+<div class="header">
+
+<h1>Document Management Dashboard</h1>
+
+<div class="admin">
+Admin Panel
+</div>
+
+</div>
+
+<div class="cards">
+
+<div class="card">
+<h2>127</h2>
+<p>Total Documents</p>
+</div>
+
+<div class="card">
+<h2>08</h2>
+<p>Categories</p>
+</div>
+
+<div class="card">
+<h2>15</h2>
+<p>New Uploads</p>
+</div>
+
+<div class="card">
+<h2>50+</h2>
+<p>Years Archive</p>
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>Document Search</h2>
+
+<div class="filters">
+
+<input
+type="text"
+placeholder="Search document name">
+
+<select>
+<option>All Categories</option>
+<option>Land Records</option>
+<option>Bank Files</option>
+<option>Meetings</option>
+<option>Members</option>
+</select>
+
+<input type="date">
+
+<button class="btn">
+Search
+</button>
+
+</div>
+
+<table>
+
+<thead>
+<tr>
+<th>Document</th>
+<th>Category</th>
+<th>Date</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>Society Registration.pdf</td>
+<td>Registration</td>
+<td>12-01-2025</td>
+<td>
+<span class="status">
+Active
+</span>
+</td>
+<td>
+<button class="btn">
+Download
+</button>
+</td>
+</tr>
+
+<tr>
+<td>Member Register.pdf</td>
+<td>Members</td>
+<td>03-04-2025</td>
+<td>
+<span class="status">
+Active
+</span>
+</td>
+<td>
+<button class="btn">
+Download
+</button>
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<div class="section">
+
+<h2>Upload New Document</h2>
+
+<div class="upload-box">
+
+<h3>📤 Drag & Drop Files Here</h3>
+
+<p>
+Supported Formats:
+PDF, JPG, PNG, DOCX, XLSX
+</p>
+
+<br>
+
+<input type="file" multiple>
+
+<br><br>
+
+<button class="btn">
+Upload Documents
+</button>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>Document Scanner</h2>
+
+<div class="scanner">
+
+<div class="preview">
+
+📄
+
+<br><br>
+
+Scanner Preview Area
+
+<br>
+
+(Scanned document will appear here)
+
+</div>
+
+<div class="control-panel">
+
+<label>
+Select Physical Document Image
+</label>
+
+<input type="file">
+
+<label>
+Brightness
+</label>
+
+<input
+class="range"
+type="range"
+min="0"
+max="100"
+value="50">
+
+<label>
+Contrast
+</label>
+
+<input
+class="range"
+type="range"
+min="0"
+max="100"
+value="50">
+
+<label>
+Sharpness
+</label>
+
+<input
+class="range"
+type="range"
+min="0"
+max="100"
+value="60">
+
+<label>
+Output Format
+</label>
+
+<select>
+<option>PDF</option>
+<option>PNG</option>
+<option>JPG</option>
+</select>
+
+<button class="btn">
+Scan & Generate
+</button>
+
+<button class="btn">
+Save To Archive
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>Document Categories</h2>
+
+<div class="cards">
+
+<div class="card">
+<h2>🏛️</h2>
+<p>Registration Records</p>
+</div>
+
+<div class="card">
+<h2>🌾</h2>
+<p>Land Records</p>
+</div>
+
+<div class="card">
+<h2>👥</h2>
+<p>Member Records</p>
+</div>
+
+<div class="card">
+<h2>🏦</h2>
+<p>Bank Documents</p>
+</div>
+
+<div class="card">
+<h2>📑</h2>
+<p>Meeting Minutes</p>
+</div>
+
+<div class="card">
+<h2>📊</h2>
+<p>Annual Reports</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>Recent Activity</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>User</th>
+<th>Activity</th>
+<th>Date</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>Admin</td>
+<td>Uploaded Society Registration.pdf</td>
+<td>09-08-2026</td>
+</tr>
+
+<tr>
+<td>Admin</td>
+<td>Scanned Member Record</td>
+<td>08-08-2026</td>
+</tr>
+
+<tr>
+<td>Admin</td>
+<td>Downloaded Meeting Minutes</td>
+<td>08-08-2026</td>
+</tr>
+
+<tr>
+<td>Admin</td>
+<td>Uploaded Annual Report</td>
+<td>07-08-2026</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="section">
+
+<h2>Archive Overview</h2>
+
+<div class="cards">
+
+<div class="card">
+<h2>1970</h2>
+<p>Earliest Available Record</p>
+</div>
+
+<div class="card">
+<h2>2026</h2>
+<p>Latest Digital Record</p>
+</div>
+
+<div class="card">
+<h2>35 GB</h2>
+<p>Total Storage Used</p>
+</div>
+
+<div class="card">
+<h2>99%</h2>
+<p>Archive Health</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="footer">
+
+© 2026 Dr. Ambedkar Krishi Sahakari Society
+
+<br>
+
+Document Management & Digital Archive System
+
+</div>
+
+</div>
+
+<script>
+
+const searchBtn = document.querySelector('.btn');
+
+console.log(
+"Society Document Management Dashboard Loaded"
+);
+
+/* Future Integration Points
+
+1. Firebase Storage
+2. PDF.js Viewer
+3. Tesseract OCR
+4. OpenCV Scanner
+5. Member Authentication
+6. Full Text Search
+
+*/
+
+</script>
+
+</body>
+</html>
