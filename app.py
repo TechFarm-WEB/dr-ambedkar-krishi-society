@@ -9,20 +9,37 @@
 #  ISSUE NO         : GIT HUB ISSUE NO
 #  Description      : FILE UPLOADING SYSTEM
 # ------------------------------------------------------------------->
+# <!---------------------------------------------------------------------
+#  Author Modify    : Sakshi
+#  Creation Date    : 12/08/2026
+#  Transaction      : NA
+#  Application Area : BACKEND ENGINE
+#  Object ID        : Neudocl
+#  BRF Application  : NA
+#  BRF DT           : NA
+#  ISSUE NO         : GIT HUB ISSUE NO
+#  Description      : FILE UPLOADING SYSTEM
+# ------------------------------------------------------------------->
 
 from flask import (
     Flask,
     render_template,
     request,
     redirect,
-    url_for
+    url_for,
+    jsonify
 )
 
+from werkzeug.utils import secure_filename
+
 import os
+import sqlite3
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
+DATABASE = "documents.db"
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -33,6 +50,106 @@ os.makedirs(
 
 
 # =========================================================
+# CATEGORIES (single source of truth — used by every route)
+# =========================================================
+
+CATEGORIES = {
+
+    "Audit": "Audit",
+
+    "Revenue": "Revenue",
+
+    "Court Matter": "Court_Matter",
+
+    "Membership Details": "Membership_Details",
+
+    "Police Department": "Police_Department",
+
+    "Dispute": "Dispute",
+
+    "Committee Proceedings":
+        "Committee_Proceedings",
+
+    "Samiti Records":
+        "Samiti_Records",
+
+    "Others": "Others",
+
+    "Official Letters":
+        "Official_Letters"
+}
+
+CATEGORY_ICONS = {
+    "Audit": "fa-clipboard-check",
+    "Revenue": "fa-sack-dollar",
+    "Court Matter": "fa-scale-balanced",
+    "Membership Details": "fa-users",
+    "Police Department": "fa-shield-halved",
+    "Dispute": "fa-gavel",
+    "Committee Proceedings": "fa-building-columns",
+    "Samiti Records": "fa-box-archive",
+    "Others": "fa-thumbtack",
+    "Official Letters": "fa-envelope-open-text"
+}
+
+
+# =========================================================
+# DATABASE
+# =========================================================
+
+def get_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    conn = get_db()
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS documents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            filename TEXT NOT NULL,
+            category TEXT NOT NULL,
+            source TEXT NOT NULL DEFAULT 'upload',
+            filepath TEXT NOT NULL,
+            filesize INTEGER DEFAULT 0,
+            uploaded_at TEXT NOT NULL
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+def record_document(filename, category, source, filepath, filesize):
+
+    conn = get_db()
+
+    conn.execute(
+        """
+        INSERT INTO documents
+            (filename, category, source, filepath, filesize, uploaded_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            filename,
+            category,
+            source,
+            filepath,
+            filesize,
+            datetime.utcnow().isoformat()
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+
+init_db()
+
+
+# =========================================================
 # HOME / DASHBOARD
 # =========================================================
 
@@ -40,75 +157,45 @@ os.makedirs(
 def home():
 
     return render_template(
-        "index.html"
+        "index.html",
+        categories=CATEGORIES,
+        category_icons=CATEGORY_ICONS
     )
 
 
 # =========================================================
-# UPLOAD DOCUMENT
+# UPLOAD DOCUMENT  (Upload New Document panel)
 # =========================================================
 
 @app.route("/upload", methods=["POST"])
 def upload():
 
-    # Get selected category
     category = request.form.get("category")
-
-    # Get uploaded files
     files = request.files.getlist("file")
 
-
-    # Available categories
-    categories = {
-
-        "Audit": "Audit",
-
-        "Revenue": "Revenue",
-
-        "Court Matter": "Court_Matter",
-
-        "Membership Details": "Membership_Details",
-
-        "Police Department": "Police_Department",
-
-        "Dispute": "Dispute",
-
-        "Committee Proceedings":
-            "Committee_Proceedings",
-
-        "Samiti Records":
-            "Samiti_Records",
-
-        "Others": "Others",
-
-        "Official Letters":
-            "Official_Letters"
-    }
-
-
-    # Check category
     if not category:
+        return jsonify(
+            success=False,
+            message="Please select a category."
+        ), 400
 
-        return """
-        <script>
-            alert("Please select a category.");
-            window.history.back();
-        </script>
-        """
+    if category not in CATEGORIES:
+        return jsonify(
+            success=False,
+            message="Invalid category selected."
+        ), 400
 
+    valid_files = [f for f in files if f and f.filename]
 
-    # Check valid category
-    if category not in categories:
+    if not valid_files:
+        return jsonify(
+            success=False,
+            message="Please choose at least one file to upload."
+        ), 400
 
-        return "Invalid category selected.", 400
-
-
-    # Create selected category folder
     category_folder = os.path.join(
-
         app.config["UPLOAD_FOLDER"],
-
-        categories[category]
+        CATEGORIES[category]
     )
 
     os.makedirs(
@@ -116,94 +203,128 @@ def upload():
         exist_ok=True
     )
 
+    saved_files = []
 
-    # Save files
-    for file in files:
+    for file in valid_files:
 
-        if file and file.filename:
+        filename = secure_filename(file.filename)
 
-            file.save(
+        if not filename:
+            continue
 
-                os.path.join(
+        destination = os.path.join(
+            category_folder,
+            filename
+        )
 
-                    category_folder,
+        file.save(destination)
 
-                    file.filename
-                )
-            )
+        filesize = os.path.getsize(destination)
 
+        record_document(
+            filename=filename,
+            category=category,
+            source="upload",
+            filepath=destination,
+            filesize=filesize
+        )
 
-    # Go back to dashboard
-    return f"""
-    <script>
+        saved_files.append(filename)
 
-        alert(
-            "Files uploaded successfully to {category} category!"
-        );
+    if not saved_files:
+        return jsonify(
+            success=False,
+            message="No valid files were uploaded."
+        ), 400
 
-        window.location.href = "/";
-
-    </script>
-    """
+    return jsonify(
+        success=True,
+        message=f"{len(saved_files)} file(s) uploaded successfully to {category}.",
+        category=category,
+        files=saved_files
+    )
 
 
 # =========================================================
-# OPEN CATEGORY
+# SCAN & SAVE  (Document Scanner panel)
+# =========================================================
+
+@app.route("/scan", methods=["POST"])
+def scan_save():
+
+    category = request.form.get("category")
+    file = request.files.get("file")
+
+    if not category or category not in CATEGORIES:
+        return jsonify(
+            success=False,
+            message="Please select a valid category before saving."
+        ), 400
+
+    if not file or not file.filename:
+        return jsonify(
+            success=False,
+            message="No scanned image was provided."
+        ), 400
+
+    category_folder = os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        CATEGORIES[category]
+    )
+
+    os.makedirs(
+        category_folder,
+        exist_ok=True
+    )
+
+    filename = secure_filename(file.filename)
+
+    destination = os.path.join(
+        category_folder,
+        filename
+    )
+
+    file.save(destination)
+
+    filesize = os.path.getsize(destination)
+
+    record_document(
+        filename=filename,
+        category=category,
+        source="scanner",
+        filepath=destination,
+        filesize=filesize
+    )
+
+    return jsonify(
+        success=True,
+        message=f"Scanned document saved to {category}.",
+        category=category,
+        filename=filename
+    )
+
+
+# =========================================================
+# OPEN CATEGORY  (unchanged — filesystem-backed listing)
 # =========================================================
 
 @app.route("/category/<path:category>")
 def show_category(category):
 
-    categories = {
-
-        "Audit": "Audit",
-
-        "Revenue": "Revenue",
-
-        "Court Matter": "Court_Matter",
-
-        "Membership Details": "Membership_Details",
-
-        "Police Department": "Police_Department",
-
-        "Dispute": "Dispute",
-
-        "Committee Proceedings":
-            "Committee_Proceedings",
-
-        "Samiti Records":
-            "Samiti_Records",
-
-        "Others": "Others",
-
-        "Official Letters":
-            "Official_Letters"
-    }
-
-
-    # Check category
-    if category not in categories:
+    if category not in CATEGORIES:
 
         return "Category not found.", 404
 
-
-    # Get category folder
     folder = os.path.join(
-
         app.config["UPLOAD_FOLDER"],
-
-        categories[category]
+        CATEGORIES[category]
     )
 
-
-    # Make folder if it doesn't exist
     os.makedirs(
         folder,
         exist_ok=True
     )
 
-
-    # Get files
     files = []
 
     for filename in os.listdir(folder):
@@ -217,16 +338,147 @@ def show_category(category):
 
             files.append(filename)
 
-
-    # Use SAME index.html
     return render_template(
 
         "index.html",
+
+        categories=CATEGORIES,
+
+        category_icons=CATEGORY_ICONS,
 
         selected_category=category,
 
         category_files=files
     )
+
+
+# =========================================================
+# API — DASHBOARD STATISTICS
+# =========================================================
+
+@app.route("/api/stats")
+def api_stats():
+
+    conn = get_db()
+
+    total_documents = conn.execute(
+        "SELECT COUNT(*) AS c FROM documents"
+    ).fetchone()["c"]
+
+    week_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
+
+    new_uploads = conn.execute(
+        "SELECT COUNT(*) AS c FROM documents WHERE uploaded_at >= ?",
+        (week_ago,)
+    ).fetchone()["c"]
+
+    conn.close()
+
+    return jsonify(
+        total_documents=total_documents,
+        categories=len(CATEGORIES),
+        new_uploads=new_uploads,
+        years_archive="50+"
+    )
+
+
+# =========================================================
+# API — CATEGORY BREAKDOWN (for the Categories popup)
+# =========================================================
+
+@app.route("/api/categories")
+def api_categories():
+
+    conn = get_db()
+
+    rows = conn.execute(
+        "SELECT category, COUNT(*) AS c FROM documents GROUP BY category"
+    ).fetchall()
+
+    conn.close()
+
+    counts = {row["category"]: row["c"] for row in rows}
+
+    data = [
+        {"name": name, "count": counts.get(name, 0)}
+        for name in CATEGORIES.keys()
+    ]
+
+    return jsonify(data)
+
+
+# =========================================================
+# API — DOCUMENT LIST / SEARCH
+# =========================================================
+
+@app.route("/api/documents")
+def api_documents():
+
+    query = request.args.get("q", "").strip()
+    category = request.args.get("category", "").strip()
+    date = request.args.get("date", "").strip()
+    limit = request.args.get("limit", type=int) or 200
+
+    sql = "SELECT * FROM documents WHERE 1=1"
+    params = []
+
+    if query:
+        sql += " AND filename LIKE ?"
+        params.append(f"%{query}%")
+
+    if category and category != "All Categories":
+        sql += " AND category = ?"
+        params.append(category)
+
+    if date:
+        sql += " AND substr(uploaded_at, 1, 10) = ?"
+        params.append(date)
+
+    sql += " ORDER BY uploaded_at DESC LIMIT ?"
+    params.append(limit)
+
+    conn = get_db()
+    rows = conn.execute(sql, params).fetchall()
+    conn.close()
+
+    documents = [dict(row) for row in rows]
+
+    return jsonify(documents)
+
+
+# =========================================================
+# API — RECENT ACTIVITY
+# =========================================================
+
+@app.route("/api/activity")
+def api_activity():
+
+    limit = request.args.get("limit", type=int) or 8
+
+    conn = get_db()
+
+    rows = conn.execute(
+        "SELECT * FROM documents ORDER BY uploaded_at DESC LIMIT ?",
+        (limit,)
+    ).fetchall()
+
+    conn.close()
+
+    activity = []
+
+    for row in rows:
+
+        verb = "Scanned" if row["source"] == "scanner" else "Uploaded"
+
+        activity.append({
+            "user": "Admin",
+            "action": f"{verb} {row['filename']}",
+            "category": row["category"],
+            "date": row["uploaded_at"],
+            "source": row["source"]
+        })
+
+    return jsonify(activity)
 
 
 # =========================================================
