@@ -21,14 +21,8 @@
 #  Description      : FILE UPLOADING SYSTEM
 # ------------------------------------------------------------------->
 
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    jsonify
-)
+from flask import Flask, render_template,request,redirect,url_for,jsonify
+
 
 from werkzeug.utils import secure_filename
 
@@ -122,14 +116,55 @@ def init_db():
     conn.close()
 
 
+# def record_document(filename, category, source, filepath, filesize):
+
+#     conn = get_db()
+
+#     conn.execute(
+#         """
+#         INSERT INTO documents
+#             (filename, category, source, filepath, filesize, uploaded_at)
+#         VALUES (?, ?, ?, ?, ?, ?)
+#         """,
+#         (
+#             filename,
+#             category,
+#             source,
+#             filepath,
+#             filesize,
+#             datetime.utcnow().isoformat()
+#         )
+#     )
+
+#     conn.commit()
+#     conn.close()
+# =========================================================
+# SAVE DOCUMENT RECORD WITH IST TIMESTAMP
+# =========================================================
+
+from zoneinfo import ZoneInfo
+
+
 def record_document(filename, category, source, filepath, filesize):
+
+    # UTC + 5:30 = IST
+    ist_timestamp = (
+        datetime.utcnow() + timedelta(hours=5, minutes=30)
+    ).isoformat()
 
     conn = get_db()
 
     conn.execute(
         """
         INSERT INTO documents
-            (filename, category, source, filepath, filesize, uploaded_at)
+            (
+                filename,
+                category,
+                source,
+                filepath,
+                filesize,
+                uploaded_at
+            )
         VALUES (?, ?, ?, ?, ?, ?)
         """,
         (
@@ -138,7 +173,7 @@ def record_document(filename, category, source, filepath, filesize):
             source,
             filepath,
             filesize,
-            datetime.utcnow().isoformat()
+            ist_timestamp
         )
     )
 

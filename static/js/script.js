@@ -162,15 +162,38 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function formatDate(isoString) {
-    var d = new Date(isoString);
-    if (isNaN(d.getTime())) return isoString;
-    return d.toLocaleDateString(undefined, {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+  // function formatDate(isoString) {
+  //   var d = new Date(isoString);
+  //   if (isNaN(d.getTime())) return isoString;
+  //   return d.toLocaleDateString(undefined, {
+  //     day: "2-digit",
+  //     month: "short",
+  //     year: "numeric",
+  //   });
+  // }
+
+  /* -------------------------------------------------------------
+   FORMAT DATE + TIME
+   Example Output:
+   22 Aug 2026, 03:45:21 PM
+------------------------------------------------------------- */
+function formatDate(isoString) {
+  var d = new Date(isoString);
+
+  if (isNaN(d.getTime())) {
+    return isoString;
   }
+
+  return d.toLocaleString(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
+}
 
   function animateCount(el, target) {
     if (!el) return;
@@ -303,6 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "<td>" +
           escapeHtml(doc.category) +
           "</td>" +
+          /* Display upload date and exact time */
           "<td>" +
           formatDate(doc.uploaded_at) +
           "</td>" +
@@ -324,6 +348,7 @@ document.addEventListener("DOMContentLoaded", function () {
           '<span><i class="fa-solid fa-layer-group" aria-hidden="true"></i>' +
           escapeHtml(doc.category) +
           "</span>" +
+          /* Mobile card date + time */
           '<span><i class="fa-regular fa-calendar" aria-hidden="true"></i>' +
           formatDate(doc.uploaded_at) +
           "</span>" +
@@ -406,6 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "<td>" +
           escapeHtml(item.action) +
           "</td>" +
+          /* Display activity date and exact time */
           "<td>" +
           formatDate(item.date) +
           "</td>" +
