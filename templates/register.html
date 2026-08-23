@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <h2>Register</h2>
+
+        {% if error %}
+        <p class="error-message">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST" action="/register">
+
+            <!-- Name -->
+            <div class="form-group">
+                <input type="text" name="name" placeholder=" " required>
+                <label>Full Name</label>
+                <i class="fa-solid fa-user"></i>
+            </div>
+
+            <!-- Mobile -->
+            <div class="form-group">
+                <input type="text" name="mobile" placeholder=" " required>
+                <label>Mobile Number</label>
+                <i class="fa-solid fa-phone"></i>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <input type="email" name="email" placeholder=" " required>
+                <label>Email</label>
+                <i class="fa-solid fa-envelope"></i>
+            </div>
+
+            <!-- Address -->
+            <div class="form-group">
+                <input type="text" name="address" placeholder=" " required>
+                <label>Address</label>
+                <i class="fa-solid fa-location-dot"></i>
+            </div>
+
+            <!-- Favourite Place -->
+            <div class="form-group">
+                <input type="text" name="fav_place" placeholder=" " required>
+                <label>Favourite Place</label>
+                <i class="fa-solid fa-heart"></i>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <input type="password" name="password" placeholder=" " required>
+                <label>Password</label>
+                <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group">
+                <input type="password" name="confirm_password" placeholder=" " required>
+                <label>Confirm Password</label>
+                <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <input id="btn" type="submit" value="Register">
+
+            <p>
+                Already have an account?
+                <a href="/login">Login</a>
+            </p>
+
+        </form>
+
+    </div>
+
+</body>
+</html>

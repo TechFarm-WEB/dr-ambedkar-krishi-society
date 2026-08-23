@@ -413,6 +413,29 @@ select:focus-visible,
   border-radius: 999px;
 }
 
+
+/* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Dashboard logout button
+   ===================================================== */
+
+.logout-btn{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #dc3545;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.logout-btn:hover{
+    opacity: 0.9;
+}
+
 .admin-chip .avatar {
   width: 32px;
   height: 32px;

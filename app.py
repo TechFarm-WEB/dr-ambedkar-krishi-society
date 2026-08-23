@@ -20,8 +20,19 @@
 #  ISSUE NO         : GIT HUB ISSUE NO
 #  Description      : FILE UPLOADING SYSTEM
 # ------------------------------------------------------------------->
-
-from flask import Flask, render_template,request,redirect,url_for,jsonify
+#ABHISHEK CHANGE
+# Purpose:
+# Flask session is used to remember whether
+# a user is logged in between requests.
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    jsonify,
+    session
+)
 
 
 from werkzeug.utils import secure_filename
@@ -31,6 +42,13 @@ import sqlite3
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
+# =========================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Enable Flask session management
+# =========================================================
+
+app.secret_key = "abhishek_auth_v1"
 
 UPLOAD_FOLDER = "uploads"
 DATABASE = "documents.db"
@@ -112,6 +130,41 @@ def init_db():
         )
     """)
 
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Store login users for authentication
+    # =====================================================
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        mobile TEXT UNIQUE,
+        email TEXT UNIQUE NOT NULL,
+        address TEXT,
+        fav_place TEXT,
+        password TEXT NOT NULL,
+        role TEXT DEFAULT 'user'
+    )
+""")
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN mobile TEXT")
+    except:
+        pass
+
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN address TEXT")
+    except:
+        pass
+
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN fav_place TEXT")
+    except:
+        pass
+
+
+    
+
     conn.commit()
     conn.close()
 
@@ -184,19 +237,181 @@ def record_document(filename, category, source, filepath, filesize):
 init_db()
 
 
+init_db()
+
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Create default admin user if not exists
+# =====================================================
+
+conn = get_db()
+
+conn.execute("""
+INSERT OR IGNORE INTO users
+(name, email, password, role)
+VALUES
+('Abhishek', 'admin@neudocl.com', 'admin123', 'admin')
+""")
+
+conn.commit()
+conn.close()
+
+
 # =========================================================
 # HOME / DASHBOARD
 # =========================================================
 
+
+# =========================================================
+# HOME / DASHBOARD
+# =========================================================
+from flask import render_template, request, redirect
+
 @app.route("/")
 def home():
+    return render_template("login.html")
+
+
+
+
+# =========================================================
+# LOGIN PAGE
+# =========================================================
+@app.route("/login", methods=["GET", "POST"])
+def login():
+
+    if request.method == "POST":
+
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        conn = get_db()
+
+        user = conn.execute(
+            """
+            SELECT * FROM users
+            WHERE email = ?
+            AND password = ?
+            """,
+            (email, password)
+        ).fetchone()
+
+        conn.close()
+
+        if user:
+
+            session["logged_in"] = True
+
+            return redirect("/dashboard")
+
+        return render_template(
+    "login.html",
+    error="Invalid Email or Password"
+)
+
+    return render_template(
+    "login.html",
+    error=None
+)
+
+
+
+# =========================================================
+# REGISTER
+# =========================================================
+@app.route("/register", methods=["GET", "POST"])
+def register():
+
+    if request.method == "POST":
+
+        name = request.form.get("name")
+        mobile = request.form.get("mobile")
+        email = request.form.get("email")
+        address = request.form.get("address")
+        fav_place = request.form.get("fav_place")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+
+        # Password validation
+        if password != confirm_password:
+            return render_template(
+                "register.html",
+                error="Passwords do not match"
+            )
+
+        conn = get_db()
+
+        # Check if email already exists
+        existing_user = conn.execute(
+            """
+            SELECT * FROM users
+            WHERE email = ?
+            """,
+            (email,)
+        ).fetchone()
+
+        if existing_user:
+            conn.close()
+
+            return render_template(
+                "register.html",
+                error="Email already registered"
+            )
+
+        # Save new user
+        conn.execute(
+            """
+            INSERT INTO users
+            (
+                name,
+                mobile,
+                email,
+                address,
+                fav_place,
+                password,
+                role
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                name,
+                mobile,
+                email,
+                address,
+                fav_place,
+                password,
+                "user"
+            )
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect("/login")
+
+    return render_template(
+        "register.html",
+        error=None
+    )
+
+
+
+# =========================================================
+# DASHBOARD
+# =========================================================
+
+@app.route("/dashboard")
+def dashboard():
+
+    if not session.get("logged_in"):
+        return redirect("/login")
 
     return render_template(
         "index.html",
         categories=CATEGORIES,
         category_icons=CATEGORY_ICONS
     )
-
 
 # =========================================================
 # UPLOAD DOCUMENT  (Upload New Document panel)
@@ -515,6 +730,17 @@ def api_activity():
 
     return jsonify(activity)
 
+
+# =========================================================
+# LOGOUT
+# =========================================================
+
+@app.route("/logout")
+def logout():
+
+    session.clear()
+
+    return redirect("/login")
 
 # =========================================================
 # START FLASK
