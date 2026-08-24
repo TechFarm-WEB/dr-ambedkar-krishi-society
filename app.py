@@ -54,10 +54,16 @@ from flask import (
 
 from werkzeug.utils import secure_filename
 
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Import secure password hashing functions
+# =====================================================
+from werkzeug.security import generate_password_hash, check_password_hash
+
 import os
 import sqlite3
 from datetime import datetime, timedelta
-
 app = Flask(__name__)
 # =========================================================
 # ABHISHEK CHANGE
@@ -310,6 +316,30 @@ def home():
 # =========================================================
 # LOGIN PAGE
 # =========================================================
+
+
+        # =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Verify hashed password
+# =====================================================
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Support both hashed passwords and legacy plain-text
+# passwords during migration
+# =====================================================
+
+       # =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Support both hashed passwords and legacy plain-text
+# passwords during migration
+# =====================================================
+
+# =========================================================
+# LOGIN PAGE
+# =========================================================
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -320,30 +350,79 @@ def login():
 
         conn = get_db()
 
+        # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Find user by email only
+        # Password will be verified using hash
+        # =====================================================
         user = conn.execute(
             """
-            SELECT * FROM users
+            SELECT *
+            FROM users
             WHERE email = ?
-            AND password = ?
             """,
-            (email, password)
+            (email,)
         ).fetchone()
 
         conn.close()
 
         if user:
 
-            session["logged_in"] = True
-            session["user_name"] = user["name"]
-            session["user_role"] = user["role"]
-            # =====================================================
-# ABHISHEK CHANGE
-# Purpose:
-# Store logged-in user ID in session
-# =====================================================
-            session["user_id"] = user["id"]
+            password_valid = False
 
-            return redirect("/dashboard")
+            try:
+
+                password_valid = check_password_hash(
+                    user["password"],
+                    password
+                )
+
+            except:
+
+                password_valid = False
+
+            # =====================================================
+            # ABHISHEK CHANGE
+            # Purpose:
+            # Auto-migrate legacy plain-text passwords
+            # to secure hashed passwords
+            # =====================================================
+            if not password_valid and user["password"] == password:
+
+                conn = get_db()
+
+                conn.execute(
+                    """
+                    UPDATE users
+                    SET password = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        generate_password_hash(password),
+                        user["id"]
+                    )
+                )
+
+                conn.commit()
+                conn.close()
+
+                password_valid = True
+
+            if password_valid:
+
+                session["logged_in"] = True
+                session["user_name"] = user["name"]
+                session["user_role"] = user["role"]
+
+                # =====================================================
+                # ABHISHEK CHANGE
+                # Purpose:
+                # Store logged-in user ID in session
+                # =====================================================
+                session["user_id"] = user["id"]
+
+                return redirect("/dashboard")
 
         return render_template(
             "login.html",
@@ -354,7 +433,6 @@ def login():
         "login.html",
         error=None
     )
-
 
 
 # =========================================================
@@ -373,12 +451,20 @@ def register():
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
 
-        # Password validation
+                # Password validation
         if password != confirm_password:
             return render_template(
                 "register.html",
                 error="Passwords do not match"
             )
+
+        # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Convert plain password into secure hash
+        # before storing in database
+        # =====================================================
+        hashed_password = generate_password_hash(password)
 
         conn = get_db()
 
@@ -390,7 +476,6 @@ def register():
             """,
             (email,)
         ).fetchone()
-
         if existing_user:
             conn.close()
 
@@ -420,7 +505,7 @@ def register():
                 email,
                 address,
                 fav_place,
-                password,
+                hashed_password,
                 "user"
             )
         )
@@ -434,6 +519,92 @@ def register():
         "register.html",
         error=None
     )
+
+# =========================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Recover forgotten password using favourite place
+# =========================================================
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+
+    if request.method == "POST":
+
+        email = request.form.get("email")
+        fav_place = request.form.get("fav_place")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+
+        # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Validate password confirmation
+        # =====================================================
+
+        if password != confirm_password:
+
+            return render_template(
+                "forgot_password.html",
+                error="Passwords do not match"
+            )
+
+        conn = get_db()
+
+        # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Verify user using email and favourite place
+        # =====================================================
+
+        user = conn.execute(
+            """
+            SELECT *
+            FROM users
+            WHERE email = ?
+            AND fav_place = ?
+            """,
+            (email, fav_place)
+        ).fetchone()
+
+        if not user:
+
+            conn.close()
+
+            return render_template(
+                "forgot_password.html",
+                error="Invalid Email or Favourite Place"
+            )
+
+        # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Update password
+        # =====================================================
+
+        conn.execute(
+            """
+            UPDATE users
+            SET password = ?
+            WHERE id = ?
+            """,
+            (password, user["id"])
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect("/login")
+
+    return render_template(
+        "forgot_password.html",
+        error=None
+    )
+
+
+
+
+
 
 
 
@@ -805,14 +976,62 @@ def show_category(category):
 # API — DASHBOARD STATISTICS
 # =========================================================
 
+# =========================================================
+# API — DASHBOARD STATISTICS
+# =========================================================
+
 @app.route("/api/stats")
 def api_stats():
 
     conn = get_db()
 
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Count total documents in archive
+    # =====================================================
+
     total_documents = conn.execute(
         "SELECT COUNT(*) AS c FROM documents"
     ).fetchone()["c"]
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Count total registered users
+    # =====================================================
+
+    total_users = conn.execute(
+        "SELECT COUNT(*) AS c FROM users"
+    ).fetchone()["c"]
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Count documents uploaded through Scanner module
+    # =====================================================
+
+    scanned_documents = conn.execute(
+        "SELECT COUNT(*) AS c FROM documents WHERE source = ?",
+        ("scanner",)
+    ).fetchone()["c"]
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Count documents uploaded manually
+    # =====================================================
+
+    uploaded_documents = conn.execute(
+        "SELECT COUNT(*) AS c FROM documents WHERE source = ?",
+        ("upload",)
+    ).fetchone()["c"]
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Count uploads made in the last 7 days
+    # =====================================================
 
     week_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
 
@@ -823,11 +1042,20 @@ def api_stats():
 
     conn.close()
 
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Return dashboard and reports statistics
+    # =====================================================
+
     return jsonify(
         total_documents=total_documents,
         categories=len(CATEGORIES),
         new_uploads=new_uploads,
-        years_archive="50+"
+        years_archive="50+",
+        total_users=total_users,
+        scanned_documents=scanned_documents,
+        uploaded_documents=uploaded_documents
     )
 
 

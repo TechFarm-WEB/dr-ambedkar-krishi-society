@@ -464,19 +464,60 @@
       </section>
 
       <!-- =====================================================
-           REPORTS (placeholder — no reporting engine exists yet)
-           ===================================================== -->
+     ABHISHEK CHANGE
+     Purpose:
+     Reports dashboard with live statistics
+     ===================================================== -->
       <section id="reports" class="panel" aria-labelledby="reports-title">
-        <div class="section-title">
-          <h2 id="reports-title"><i class="fa-solid fa-chart-column" aria-hidden="true"></i> Reports</h2>
-        </div>
-        <div class="placeholder-panel">
-          <i class="fa-regular fa-chart-bar" aria-hidden="true"></i>
-          <h3>Reporting isn't set up yet</h3>
-          <p>Document and category reports will appear here once this feature is built.</p>
-        </div>
-      </section>
 
+  <div class="section-title">
+    <h2 id="reports-title">
+      <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+      Reports
+    </h2>
+  </div>
+
+  <!-- =====================================================
+       ABHISHEK CHANGE
+       Purpose:
+       Display live report statistics
+       ===================================================== -->
+
+  <div class="stats-grid" id="reportsStats">
+
+    <div class="stat-card">
+      <div class="stat-label">Total Documents</div>
+      <div class="stat-value" id="reportTotalDocuments">0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value" id="reportTotalUsers">0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Scanned Documents</div>
+      <div class="stat-value" id="reportScannedDocuments">0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Uploaded Documents</div>
+      <div class="stat-value" id="reportUploadedDocuments">0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">New Uploads</div>
+      <div class="stat-value" id="reportNewUploads">0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Categories</div>
+      <div class="stat-value" id="reportCategories">0</div>
+    </div>
+
+  </div>
+
+</section>
       <!-- =====================================================
            RECENT ACTIVITY
            ===================================================== -->

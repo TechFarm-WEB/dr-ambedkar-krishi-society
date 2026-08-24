@@ -212,26 +212,75 @@ function formatDate(isoString) {
   }
 
   /* -------------------------------------------------------------
-     DASHBOARD STATS  (Total Documents / Categories / New Uploads)
-     ------------------------------------------------------------- */
-  var statTotal = document.getElementById("statTotalDocuments");
-  var statCategories = document.getElementById("statCategories");
-  var statNewUploads = document.getElementById("statNewUploads");
+   DASHBOARD STATS (Total Documents / Categories / New Uploads)
+   ------------------------------------------------------------- */
 
-  function refreshStats() {
-    fetch("/api/stats")
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (data) {
-        animateCount(statTotal, data.total_documents || 0);
-        animateCount(statCategories, data.categories || 0);
-        animateCount(statNewUploads, data.new_uploads || 0);
-      })
-      .catch(function () {
-        /* stats are non-critical; fail quietly */
-      });
-  }
+var statTotal = document.getElementById("statTotalDocuments");
+var statCategories = document.getElementById("statCategories");
+var statNewUploads = document.getElementById("statNewUploads");
+
+/* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Report section statistics
+   ===================================================== */
+
+var reportTotalDocuments = document.getElementById("reportTotalDocuments");
+var reportTotalUsers = document.getElementById("reportTotalUsers");
+var reportScannedDocuments = document.getElementById("reportScannedDocuments");
+var reportUploadedDocuments = document.getElementById("reportUploadedDocuments");
+var reportNewUploads = document.getElementById("reportNewUploads");
+var reportCategories = document.getElementById("reportCategories");
+
+function refreshStats() {
+
+  fetch("/api/stats")
+
+    .then(function (res) {
+
+      return res.json();
+
+    })
+
+    .then(function (data) {
+
+      animateCount(statTotal, data.total_documents || 0);
+      animateCount(statCategories, data.categories || 0);
+      animateCount(statNewUploads, data.new_uploads || 0);
+
+      /* =====================================================
+         ABHISHEK CHANGE
+         Purpose:
+         Populate Reports dashboard statistics
+         ===================================================== */
+
+      if (reportTotalDocuments)
+        reportTotalDocuments.textContent = data.total_documents || 0;
+
+      if (reportTotalUsers)
+        reportTotalUsers.textContent = data.total_users || 0;
+
+      if (reportScannedDocuments)
+        reportScannedDocuments.textContent = data.scanned_documents || 0;
+
+      if (reportUploadedDocuments)
+        reportUploadedDocuments.textContent = data.uploaded_documents || 0;
+
+      if (reportNewUploads)
+        reportNewUploads.textContent = data.new_uploads || 0;
+
+      if (reportCategories)
+        reportCategories.textContent = data.categories || 0;
+
+    })
+
+    .catch(function () {
+
+      /* stats are non-critical; fail quietly */
+
+    });
+
+}
 
   /* -------------------------------------------------------------
      CATEGORIES BREAKDOWN MODAL
