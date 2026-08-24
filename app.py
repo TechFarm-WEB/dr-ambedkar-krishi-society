@@ -448,6 +448,51 @@ def dashboard():
         category_icons=CATEGORY_ICONS
     )
 
+
+# =========================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Admin user management page
+# =========================================================
+
+@app.route("/users")
+def users():
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Allow only logged-in users
+    # =====================================================
+
+    if not session.get("logged_in"):
+        return redirect("/login")
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Allow only admin users
+    # =====================================================
+
+    if session.get("user_role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db()
+
+    users = conn.execute(
+        """
+        SELECT *
+        FROM users
+        ORDER BY id DESC
+        """
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "users.html",
+        users=users
+    )
+
 # =========================================================
 # UPLOAD DOCUMENT  (Upload New Document panel)
 # =========================================================
