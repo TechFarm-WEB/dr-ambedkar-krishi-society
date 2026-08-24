@@ -310,7 +310,7 @@ function formatDate(isoString) {
   function renderDocuments(docs) {
     if (!docs.length) {
       tableBody.innerHTML =
-        '<tr class="state-row"><td colspan="5">' +
+        '<tr class="state-row"><td colspan="6">' +
         '<i class="fa-regular fa-folder-open" aria-hidden="true"></i>&nbsp; No documents found.</td></tr>';
       cardList.innerHTML = '<p class="list-empty">No documents found.</p>';
       return;
@@ -328,10 +328,38 @@ function formatDate(isoString) {
           "</td>" +
           /* Display upload date and exact time */
           "<td>" +
-          formatDate(doc.uploaded_at) +
-          "</td>" +
+escapeHtml(doc.uploaded_by || "Unknown") +
+"</td>" +
+
+"<td>" +
+formatDate(doc.uploaded_at) +
+"</td>" +
           '<td><span class="status">Active</span></td>' +
-          '<td><button type="button" class="btn btn-outline" disabled title="Preview coming soon">Download</button></td>' +
+          /* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Enable document download from dashboard
+   ===================================================== */
+
+'<td>' +
+
+'<a href="/download/' +
+doc.id +
+'" class="btn btn-outline">Download</a>' +
+
+/* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Show Delete button only for admin users
+   ===================================================== */
+
+(USER_ROLE === "admin"
+    ? ' <a href="/delete/' +
+      doc.id +
+      '" class="btn btn-outline" onclick="return confirm(\'Delete this document?\')">Delete</a>'
+    : '') +
+
+'</td>' +
           "</tr>"
         );
       })
@@ -354,7 +382,27 @@ function formatDate(isoString) {
           "</span>" +
           '<span class="status">Active</span>' +
           "</div>" +
-          '<button type="button" class="btn btn-outline btn-block" disabled title="Preview coming soon">Download</button>' +
+          /* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Enable document download on mobile cards
+   ===================================================== */
+
+'<a href="/download/' +
+doc.id +
+'" class="btn btn-outline btn-block">Download</a>' +
+
+/* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Show Delete button on mobile cards for admin users
+   ===================================================== */
+
+(USER_ROLE === "admin"
+    ? '<a href="/delete/' +
+      doc.id +
+      '" class="btn btn-outline btn-block" onclick="return confirm(\'Delete this document?\')">Delete</a>'
+    : '') +
           "</div>"
         );
       })
@@ -370,7 +418,7 @@ function formatDate(isoString) {
     }
 
     tableBody.innerHTML =
-      '<tr class="state-row"><td colspan="5">Loading documents…</td></tr>';
+      '<tr class="state-row"><td colspan="6">Loading documents…</td></tr>';
     cardList.innerHTML = '<p class="list-empty">Loading documents…</p>';
 
     fetch("/api/documents?" + query.toString())
@@ -389,7 +437,7 @@ function formatDate(isoString) {
       })
       .catch(function () {
         tableBody.innerHTML =
-          '<tr class="state-row"><td colspan="5">Could not load documents right now.</td></tr>';
+          '<tr class="state-row"><td colspan="6">Could not load documents right now.</td></tr>';
         cardList.innerHTML =
           '<p class="list-empty">Could not load documents right now.</p>';
       });

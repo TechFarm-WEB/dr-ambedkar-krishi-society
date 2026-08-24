@@ -24,6 +24,16 @@
 # Purpose:
 # Flask session is used to remember whether
 # a user is logged in between requests.
+
+
+
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Delete physical files from storage
+# =====================================================
+
+import os
 from flask import (
     Flask,
     render_template,
@@ -31,7 +41,14 @@ from flask import (
     redirect,
     url_for,
     jsonify,
-    session
+    session,
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Enable document downloads
+    # =====================================================
+    send_file
 )
 
 
@@ -120,15 +137,22 @@ def init_db():
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS documents (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            filename TEXT NOT NULL,
-            category TEXT NOT NULL,
-            source TEXT NOT NULL DEFAULT 'upload',
-            filepath TEXT NOT NULL,
-            filesize INTEGER DEFAULT 0,
-            uploaded_at TEXT NOT NULL
-        )
-    """)
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         filename TEXT NOT NULL,
+         category TEXT NOT NULL,
+         source TEXT NOT NULL DEFAULT 'upload',
+         filepath TEXT NOT NULL,
+         filesize INTEGER DEFAULT 0,
+         uploaded_by TEXT,
+         uploaded_at TEXT NOT NULL
+    )
+""")
+    try:
+        conn.execute(
+        "ALTER TABLE documents ADD COLUMN uploaded_by TEXT"
+    )
+    except:
+       pass
 
     # =====================================================
     # ABHISHEK CHANGE
@@ -198,7 +222,14 @@ def init_db():
 from zoneinfo import ZoneInfo
 
 
-def record_document(filename, category, source, filepath, filesize):
+def record_document(
+    filename,
+    category,
+    source,
+    filepath,
+    filesize,
+    uploaded_by=None
+):
 
     # UTC + 5:30 = IST
     ist_timestamp = (
@@ -216,9 +247,10 @@ def record_document(filename, category, source, filepath, filesize):
                 source,
                 filepath,
                 filesize,
+                uploaded_by,
                 uploaded_at
             )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
             filename,
@@ -226,13 +258,13 @@ def record_document(filename, category, source, filepath, filesize):
             source,
             filepath,
             filesize,
+            uploaded_by,
             ist_timestamp
         )
     )
 
     conn.commit()
     conn.close()
-
 
 init_db()
 
@@ -302,18 +334,21 @@ def login():
         if user:
 
             session["logged_in"] = True
+            session["user_id"] = user["id"]
+            session["user_name"] = user["name"]
+            session["user_role"] = user["role"]
 
             return redirect("/dashboard")
 
         return render_template(
-    "login.html",
-    error="Invalid Email or Password"
-)
+            "login.html",
+            error="Invalid Email or Password"
+        )
 
     return render_template(
-    "login.html",
-    error=None
-)
+        "login.html",
+        error=None
+    )
 
 
 
@@ -472,13 +507,13 @@ def upload():
         filesize = os.path.getsize(destination)
 
         record_document(
-            filename=filename,
-            category=category,
-            source="upload",
-            filepath=destination,
-            filesize=filesize
-        )
-
+    filename=filename,
+    category=category,
+    source="upload",
+    filepath=destination,
+    filesize=filesize,
+    uploaded_by=session.get("user_name")
+)
         saved_files.append(filename)
 
     if not saved_files:
@@ -657,6 +692,144 @@ def api_categories():
     return jsonify(data)
 
 
+
+
+
+
+
+
+# =========================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Allow logged-in users to download uploaded documents
+# =========================================================
+
+@app.route("/download/<int:doc_id>")
+def download_document(doc_id):
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Block downloads without login
+    # =====================================================
+
+    if not session.get("logged_in"):
+        return redirect("/login")
+
+    conn = get_db()
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Get document details from database
+    # =====================================================
+
+    doc = conn.execute(
+        "SELECT * FROM documents WHERE id = ?",
+        (doc_id,)
+    ).fetchone()
+
+    conn.close()
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Handle invalid document IDs
+    # =====================================================
+
+    if not doc:
+        return "Document not found", 404
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Download the actual uploaded file
+    # =====================================================
+
+    return send_file(
+        doc["filepath"],
+        as_attachment=True,
+        download_name=doc["filename"]
+    )
+
+
+
+
+
+# =========================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Allow admin users to delete documents
+# =========================================================
+
+@app.route("/delete/<int:doc_id>")
+def delete_document(doc_id):
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Block access without login
+    # =====================================================
+
+    if not session.get("logged_in"):
+        return redirect("/login")
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Allow only admin users
+    # =====================================================
+
+    if session.get("user_role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db()
+
+    doc = conn.execute(
+        "SELECT * FROM documents WHERE id = ?",
+        (doc_id,)
+    ).fetchone()
+
+    if not doc:
+        conn.close()
+        return "Document not found", 404
+
+
+    
+    
+    if not doc:
+        conn.close()
+        return "Document not found", 404
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Delete physical file from storage
+    # =====================================================
+
+    try:
+        if os.path.exists(doc["filepath"]):
+            os.remove(doc["filepath"])
+    except Exception as e:
+        print("File delete error:", e)
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Delete document record from database
+    # =====================================================
+
+    conn.execute(
+        "DELETE FROM documents WHERE id = ?",
+        (doc_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/dashboard")
+
+
 # =========================================================
 # API — DOCUMENT LIST / SEARCH
 # =========================================================
@@ -721,12 +894,12 @@ def api_activity():
         verb = "Scanned" if row["source"] == "scanner" else "Uploaded"
 
         activity.append({
-            "user": "Admin",
-            "action": f"{verb} {row['filename']}",
-            "category": row["category"],
-            "date": row["uploaded_at"],
-            "source": row["source"]
-        })
+    "user": row["uploaded_by"] or "Admin",
+    "action": f"{verb} {row['filename']}",
+    "category": row["category"],
+    "date": row["uploaded_at"],
+    "source": row["source"]
+})
 
     return jsonify(activity)
 
