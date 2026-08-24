@@ -1,37 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>User Management</title>
+
+    <!-- =====================================================
+         ABHISHEK CHANGE
+         Purpose:
+         Use main dashboard styling
+         ===================================================== -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<h2>User Management</h2>
+<div class="page-section">
 
-<table border="1">
+    <h2>User Management</h2>
 
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Mobile</th>
-        <th>Role</th>
-    </tr>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
 
-    {% for user in users %}
-    <tr>
-        <td>{{ user.id }}</td>
-        <td>{{ user.name }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.mobile }}</td>
-        <td>{{ user.role }}</td>
-    </tr>
-    {% endfor %}
+        <tbody>
 
-</table>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.mobile }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+   <td>
 
-<br>
+    <!-- =====================================================
+         ABHISHEK CHANGE
+         Purpose:
+         Change user role
+         ===================================================== -->
 
-<a href="/dashboard">Back to Dashboard</a>
+    {% if user.id != session.get("user_id") %}
+
+        <a href="/change-role/{{ user.id }}">
+
+            {% if user.role == "user" %}
+                Make Admin
+            {% else %}
+                Make User
+            {% endif %}
+
+        </a>
+
+        |
+
+        <!-- =====================================================
+             ABHISHEK CHANGE
+             Purpose:
+             Delete user
+             ===================================================== -->
+
+        <a href="/delete-user/{{ user.id }}"
+           onclick="return confirm('Delete this user?')">
+           Delete
+        </a>
+
+    {% else %}
+
+        Protected
+
+    {% endif %}
+
+</td>
+</td>
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+    <br>
+
+    <a href="/dashboard" class="btn">
+        Back to Dashboard
+    </a>
+
+</div>
 
 </body>
 </html>

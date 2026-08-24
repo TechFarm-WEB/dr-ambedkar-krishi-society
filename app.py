@@ -334,9 +334,14 @@ def login():
         if user:
 
             session["logged_in"] = True
-            session["user_id"] = user["id"]
             session["user_name"] = user["name"]
             session["user_role"] = user["role"]
+            # =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Store logged-in user ID in session
+# =====================================================
+            session["user_id"] = user["id"]
 
             return redirect("/dashboard")
 
@@ -493,6 +498,120 @@ def users():
         users=users
     )
 
+
+
+
+# =========================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Allow admin to delete users
+# =========================================================
+
+@app.route("/delete-user/<int:user_id>")
+def delete_user(user_id):
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Allow only admin users
+    # =====================================================
+
+    if not session.get("logged_in"):
+        return redirect("/login")
+
+    if session.get("user_role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db()
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Prevent admin deleting own account
+    # =====================================================
+
+    current_user_id = session.get("user_id")
+
+    if user_id == current_user_id:
+        conn.close()
+        return "You cannot delete your own account"
+
+    conn.execute(
+        "DELETE FROM users WHERE id = ?",
+        (user_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/users")
+
+
+# =========================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Allow admin to change user roles
+# =========================================================
+
+@app.route("/change-role/<int:user_id>")
+def change_role(user_id):
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Allow only logged-in admins
+    # =====================================================
+
+    if not session.get("logged_in"):
+        return redirect("/login")
+
+    if session.get("user_role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db()
+
+    user = conn.execute(
+        "SELECT * FROM users WHERE id = ?",
+        (user_id,)
+    ).fetchone()
+
+    if not user:
+        conn.close()
+        return "User not found", 404
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Prevent changing your own role
+    # =====================================================
+
+    if user_id == session.get("user_id"):
+        conn.close()
+        return "You cannot change your own role"
+
+    # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Toggle user/admin role
+    # =====================================================
+
+    new_role = "admin" if user["role"] == "user" else "user"
+
+    conn.execute(
+        "UPDATE users SET role = ? WHERE id = ?",
+        (new_role, user_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/users")
+
+
+
+
+
+ 
 # =========================================================
 # UPLOAD DOCUMENT  (Upload New Document panel)
 # =========================================================

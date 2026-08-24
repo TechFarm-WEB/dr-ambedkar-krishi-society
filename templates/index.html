@@ -85,6 +85,19 @@
         </a>
       </div>
 
+      <!-- =====================================================
+     ABHISHEK CHANGE
+     Purpose:
+     Show User Management only to admins
+     ===================================================== -->
+
+{% if session.get("user_role") == "admin" %}
+<a href="/users" class="nav-link">
+  <i class="fa-solid fa-users"></i>
+  <span>Users</span>
+</a>
+{% endif %}
+
       <div class="nav-group">
         <div class="nav-group-label">System</div>
         <a href="#settings" class="nav-link">
