@@ -72,6 +72,12 @@ app = Flask(__name__)
 # =========================================================
 
 app.secret_key = "abhishek_auth_v1"
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Remember Me session duration
+# =====================================================
+app.permanent_session_lifetime = timedelta(days=30)
 
 UPLOAD_FOLDER = "uploads"
 DATABASE = "documents.db"
@@ -193,7 +199,18 @@ def init_db():
         pass
 
 
-    
+
+    # =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Store user's last successful login timestamp
+# =====================================================
+
+
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
+    except:
+        pass
 
     conn.commit()
     conn.close()
@@ -296,6 +313,7 @@ conn.commit()
 conn.close()
 
 
+
 # =========================================================
 # HOME / DASHBOARD
 # =========================================================
@@ -347,6 +365,12 @@ def login():
 
         email = request.form.get("email")
         password = request.form.get("password")
+        # =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Read Remember Me checkbox
+# =====================================================
+        remember_me = request.form.get("remember_me")
 
         conn = get_db()
 
@@ -356,14 +380,20 @@ def login():
         # Find user by email only
         # Password will be verified using hash
         # =====================================================
+        # =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Allow login using email OR mobile number
+# =====================================================
         user = conn.execute(
-            """
-            SELECT *
-            FROM users
-            WHERE email = ?
-            """,
-            (email,)
-        ).fetchone()
+    """
+    SELECT *
+    FROM users
+    WHERE email = ?
+    OR mobile = ?
+    """,
+    (email, email)
+).fetchone()
 
         conn.close()
 
@@ -421,9 +451,39 @@ def login():
                 # Store logged-in user ID in session
                 # =====================================================
                 session["user_id"] = user["id"]
+                # =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Keep user logged in longer
+    # =====================================================
+                if remember_me:
+                    session.permanent = True
+
+# =====================================================
+    # ABHISHEK CHANGE
+    # Purpose:
+    # Update last successful login time
+    # =====================================================
+
+
+                conn = get_db()
+
+                conn.execute(
+                    """
+                    UPDATE users
+                    SET last_login = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        user["id"]
+                    )
+                )
+
+                conn.commit()
+                conn.close()
 
                 return redirect("/dashboard")
-
         return render_template(
             "login.html",
             error="Invalid Email or Password"
@@ -467,8 +527,9 @@ def register():
         hashed_password = generate_password_hash(password)
 
         conn = get_db()
+        
 
-        # Check if email already exists
+              # Check if email already exists
         existing_user = conn.execute(
             """
             SELECT * FROM users
@@ -476,13 +537,43 @@ def register():
             """,
             (email,)
         ).fetchone()
+
         if existing_user:
+
             conn.close()
 
             return render_template(
                 "register.html",
                 error="Email already registered"
             )
+
+        # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Check if mobile number already exists
+        # =====================================================
+
+        existing_mobile = conn.execute(
+            """
+            SELECT *
+            FROM users
+            WHERE mobile = ?
+            """,
+            (mobile,)
+        ).fetchone()
+
+        if existing_mobile:
+
+            conn.close()
+
+            return render_template(
+                "register.html",
+                error="Mobile number already registered"
+            )
+
+
+
+    
 
         # Save new user
         conn.execute(
@@ -509,6 +600,7 @@ def register():
                 "user"
             )
         )
+        
 
         conn.commit()
         conn.close()
@@ -1085,10 +1177,39 @@ def api_categories():
 
 
 
+# =========================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Preview documents in browser
+# =========================================================
 
 
+@app.route("/preview/<int:doc_id>")
+def preview_document(doc_id):
 
+    if not session.get("logged_in"):
+        return redirect("/login")
 
+    conn = get_db()
+
+    doc = conn.execute(
+        """
+        SELECT *
+        FROM documents
+        WHERE id = ?
+        """,
+        (doc_id,)
+    ).fetchone()
+
+    conn.close()
+
+    if not doc:
+        return "Document not found"
+
+    return send_file(
+        doc["filepath"],
+        as_attachment=False
+    )
 
 # =========================================================
 # ABHISHEK CHANGE

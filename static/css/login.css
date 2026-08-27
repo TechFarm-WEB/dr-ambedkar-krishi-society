@@ -89,6 +89,28 @@ h2
     font-size: 1.2em;
 }
 
+/* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Show / Hide Password icon
+   ===================================================== */
+
+.password-toggle
+{
+    right: 40px !important;
+    cursor: pointer;
+}
+/* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Position Show / Hide Password icon
+   ===================================================== */
+
+.password-toggle
+{
+    right: 40px !important;
+    cursor: pointer;
+}
 p
 {
     text-align: center;
@@ -141,3 +163,6 @@ p>a:hover
     background: rgba(0, 0, 0, 0.3);
     color: #fff;
 }
+
+
+    

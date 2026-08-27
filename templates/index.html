@@ -260,19 +260,36 @@
           <table>
             <thead>
               <tr>
-                <th scope="col">Document</th>
-<th scope="col">Category</th>
-<th scope="col">Uploaded By</th>
-<th scope="col">Date & Time</th>
-<th scope="col">Status</th>
-<th scope="col">Action</th>
-              </tr>
-            </thead>
-            <tbody id="documentsTableBody">
-              <tr class="state-row"><td colspan="6">Loading documents…</td></tr>
-            </tbody>
-          </table>
-        </div>
+                <thead>
+<tr>
+
+    <!-- ABHISHEK CHANGE -->
+    <!-- Multi Select Checkbox -->
+
+    <thead>
+<tr>
+
+    <th>
+        <input type="checkbox" id="selectAllDocs">
+    </th>
+
+    <th>Document</th>
+    <th>Category</th>
+    <th>Uploaded By</th>
+    <th>Date & Time</th>
+    <th>Status</th>
+    <th>Action</th>
+
+</tr>
+</thead>
+
+<tbody id="documentsTableBody">
+    <tr class="state-row">
+        <td colspan="7">Loading documents…</td>
+    </tr>
+</tbody>
+    
+          </tr>
 
         <!-- Mobile card equivalent (same data, no horizontal scroll) -->
         <div class="doc-cards" id="documentsCardList">

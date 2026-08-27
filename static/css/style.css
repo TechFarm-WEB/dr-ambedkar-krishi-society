@@ -1490,6 +1490,18 @@ input[type="range"] {
 .control-actions .btn:disabled:hover { background: var(--primary); }
 .control-actions .btn-outline:disabled:hover { background: transparent; }
 
+/* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Mobile number hint text
+   ===================================================== */
+.form-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.4;
+}
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

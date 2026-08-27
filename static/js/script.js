@@ -359,7 +359,7 @@ function refreshStats() {
   function renderDocuments(docs) {
     if (!docs.length) {
       tableBody.innerHTML =
-        '<tr class="state-row"><td colspan="6">' +
+        '<tr class="state-row"><td colspan="7">' +
         '<i class="fa-regular fa-folder-open" aria-hidden="true"></i>&nbsp; No documents found.</td></tr>';
       cardList.innerHTML = '<p class="list-empty">No documents found.</p>';
       return;
@@ -368,10 +368,15 @@ function refreshStats() {
     tableBody.innerHTML = docs
       .map(function (doc) {
         return (
-          "<tr>" +
-          "<td>" +
-          escapeHtml(doc.filename) +
-          "</td>" +
+  "<tr>" +
+
+  '<td><input type="checkbox" class="doc-checkbox" value="' +
+  doc.id +
+  '"></td>' +
+
+  "<td>" +
+  escapeHtml(doc.filename) +
+  "</td>" +
           "<td>" +
           escapeHtml(doc.category) +
           "</td>" +
@@ -389,8 +394,17 @@ formatDate(doc.uploaded_at) +
    Purpose:
    Enable document download from dashboard
    ===================================================== */
+   /* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Enable document preview from dashboard
+   ===================================================== */
 
 '<td>' +
+
+'<a href="/preview/' +
+doc.id +
+'" class="btn btn-outline">👁 Preview</a> ' +
 
 '<a href="/download/' +
 doc.id +
@@ -437,6 +451,10 @@ doc.id +
    Enable document download on mobile cards
    ===================================================== */
 
+'<a href="/preview/' +
+doc.id +
+'" class="btn btn-outline btn-block">👁 Preview</a>' +
+
 '<a href="/download/' +
 doc.id +
 '" class="btn btn-outline btn-block">Download</a>' +
@@ -446,6 +464,15 @@ doc.id +
    Purpose:
    Show Delete button on mobile cards for admin users
    ===================================================== */
+   /* =====================================================
+   ABHISHEK CHANGE
+   Purpose:
+   Enable document preview on mobile cards
+   ===================================================== */
+
+'<a href="/preview/' +
+doc.id +
+'" class="btn btn-outline btn-block">👁 Preview</a>' +
 
 (USER_ROLE === "admin"
     ? '<a href="/delete/' +

@@ -1,14 +1,24 @@
-
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Animated Login Form</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/login.css') }}">
+
+    <!-- =====================================================
+         ABHISHEK CHANGE
+         Purpose:
+         Enable Font Awesome icons
+         ===================================================== -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        
+    >
 </head>
-<body>
      
     <div class="container">
         <h2>Login</h2>
@@ -18,21 +28,60 @@
 
         <form method="POST" action="/login">
             
-            <div class="form-group">
-                <input type="email" name="email" required>
-                <label>Email</label>
-                <i class="fa-solid fa-envelope"></i>
-            </div>
+           <!-- =====================================================
+     ABHISHEK CHANGE
+     Purpose:
+     Allow login using email or mobile number
+     ===================================================== -->
+<div class="form-group">
+    <input type="text" name="email" required>
+    <label>Email or Mobile Number</label>
+    <i class="fa-solid fa-envelope"></i>
+</div>
+     <div class="form-group">
 
-            <div class="form-group">
-                <input type="password" name="password" required>
-                <label>Password</label>
-                <i class="fa-solid fa-lock"></i>
-            </div>
+    <input
+        type="password"
+        name="password"
+        id="password"
+        required
+    >
+
+    <label>Password</label>
+
+    <i class="fa-solid fa-lock"></i>
+
+    <i
+        class="fa-solid fa-eye password-toggle"
+        onclick="togglePassword('password', this)"
+    ></i>
+
+</div>
+
+          
+
+
 
             <p>
-                <input type="checkbox" name="remember">
-                Remember Me
+                <!-- =====================================================
+     ABHISHEK CHANGE
+     Purpose:
+     Remember Me checkbox
+     ===================================================== -->
+
+<div class="remember-me">
+
+    <input
+        type="checkbox"
+        name="remember_me"
+        id="remember_me"
+    >
+
+    <label for="remember_me">
+        Remember Me
+    </label>
+
+</div>
                 <!-- =====================================================
      ABHISHEK CHANGE
      Purpose:
@@ -48,6 +97,33 @@
 
         </form>
     </div>
+
+
+
+
+    <script>
+
+function togglePassword(inputId, icon) {
+
+    const input = document.getElementById(inputId);
+
+    if (input.type === "password") {
+
+        input.type = "text";
+
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+
+    } else {
+
+        input.type = "password";
+
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+
+</script>
 
 </body>
 </html>

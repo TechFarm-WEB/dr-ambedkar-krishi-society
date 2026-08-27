@@ -21,11 +21,12 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Mobile</th>
-                <th>Role</th>
-                <th>Actions</th>
+<th>NAME</th>
+<th>EMAIL</th>
+<th>MOBILE</th>
+<th>ROLE</th>
+<th>LAST LOGIN</th>
+<th>ACTIONS</th>
             </tr>
         </thead>
 
@@ -33,12 +34,12 @@
 
         {% for user in users %}
         <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.mobile }}</td>
-            <td>{{ user.role }}</td>
-            <td>
+            <td>{{ user["id"] }}</td>
+<td>{{ user["name"] }}</td>
+<td>{{ user["email"] }}</td>
+<td>{{ user["mobile"] }}</td>
+<td>{{ user["role"] }}</td>
+<td>{{ user["last_login"] or "Never" }}</td>
    <td>
 
     <!-- =====================================================
