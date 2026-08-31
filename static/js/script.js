@@ -907,9 +907,29 @@ doc.id +
           var ext = format === "jpg" ? "jpg" : format === "pdf" ? "pdf" : "png";
           var filename = "scan_" + Date.now() + "." + ext;
 
-          var formData = new FormData();
-          formData.append("file", blob, filename);
-          formData.append("category", category);
+// =====================================================
+// ABHISHEK CHANGE
+// Purpose:
+// Send selected output format to Flask scanner route
+// =====================================================
+
+var formData = new FormData();
+
+formData.append(
+    "file",
+    blob,
+    filename
+);
+
+formData.append(
+    "category",
+    category
+);
+
+formData.append(
+    "output_format",
+    format
+);
 
           return fetch("/scan", { method: "POST", body: formData }).then(
             function (res) {
@@ -956,3 +976,48 @@ doc.id +
   refreshActivity();
   loadDocuments(null);
 });
+
+
+
+// =====================================================
+// ABHISHEK CHANGE
+// Purpose:
+// Open document preview modal
+// =====================================================
+
+var previewModal = document.getElementById("previewModal");
+var previewFrame = document.getElementById("previewFrame");
+var closePreview = document.getElementById("closePreview");
+
+document.querySelectorAll(".preview-btn").forEach(function(btn){
+
+    btn.addEventListener("click", function(){
+
+        var file = btn.dataset.file;
+        var category = btn.dataset.category;
+
+        var url =
+            "/preview/"
+            + encodeURIComponent(category)
+            + "/"
+            + encodeURIComponent(file);
+
+        console.log(url);
+
+        previewFrame.src = url;
+
+        previewModal.style.display = "flex";
+    });
+
+});
+
+if (closePreview) {
+
+    closePreview.addEventListener("click", function(){
+
+        previewModal.style.display = "none";
+
+        previewFrame.src = "";
+    });
+
+}

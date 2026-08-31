@@ -63,8 +63,40 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 import os
 import sqlite3
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Enable OCR text extraction from images
+# =====================================================
+import pytesseract
+from PIL import Image
 from datetime import datetime, timedelta
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Enable TXT to PDF conversion
+# =====================================================
+from reportlab.pdfgen import canvas
 app = Flask(__name__)
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Configure Tesseract OCR executable
+# =====================================================
+pytesseract.pytesseract.tesseract_cmd = (
+    r"C:\Program Files\Tesseract-OCR\tesseract.exe\tesseract.exe"
+)
+
+
+
+
+app.secret_key = "abhishek_auth_v1"
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Convert image files to PDF
+# =====================================================
+from PIL import Image
 # =========================================================
 # ABHISHEK CHANGE
 # Purpose:
@@ -314,9 +346,77 @@ conn.close()
 
 
 
-# =========================================================
-# HOME / DASHBOARD
-# =========================================================
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Convert TXT file to PDF
+# =====================================================
+
+def txt_to_pdf(txt_path, pdf_path):
+
+    pdf = canvas.Canvas(pdf_path)
+
+    y = 800
+
+    with open(
+        txt_path,
+        "r",
+        encoding="utf-8",
+        errors="ignore"
+    ) as file:
+
+        for line in file:
+
+            pdf.drawString(
+                40,
+                y,
+                line.strip()
+            )
+
+            y -= 20
+
+            if y < 40:
+
+                pdf.showPage()
+                y = 800
+
+    pdf.save()
+
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Convert image file to PDF
+# =====================================================
+
+
+def image_to_pdf(image_path, pdf_path):
+
+    image = Image.open(image_path)
+
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    image.save(
+        pdf_path,
+        "PDF"
+    )
+
+
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Extract text from image using OCR
+# =====================================================
+
+def image_to_text(image_path):
+
+    image = Image.open(image_path)
+
+    extracted_text = pytesseract.image_to_string(
+        image
+    )
+
+    return extracted_text
 
 
 # =========================================================
@@ -883,6 +983,12 @@ def change_role(user_id):
 def upload():
 
     category = request.form.get("category")
+    # =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Read selected save format
+# =====================================================
+    save_format = request.form.get("save_format")
     files = request.files.getlist("file")
 
     if not category:
@@ -928,19 +1034,83 @@ def upload():
             category_folder,
             filename
         )
-
         file.save(destination)
+
+        # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Convert TXT file to PDF when requested
+        # =====================================================
+
+        if (
+            save_format == "pdf"
+            and filename.lower().endswith(".txt")
+        ):
+
+            pdf_filename = (
+                os.path.splitext(filename)[0]
+                + ".pdf"
+            )
+
+            pdf_destination = os.path.join(
+                category_folder,
+                pdf_filename
+            )
+
+            txt_to_pdf(
+                destination,
+                pdf_destination
+            )
+
+            os.remove(destination)
+
+            filename = pdf_filename
+            destination = pdf_destination
+
+        # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Convert JPG / PNG to PDF
+        # =====================================================
+
+        elif (
+            save_format == "pdf"
+            and filename.lower().endswith(
+                (".jpg", ".jpeg", ".png")
+            )
+        ):
+
+            pdf_filename = (
+                os.path.splitext(filename)[0]
+                + ".pdf"
+            )
+
+            pdf_destination = os.path.join(
+                category_folder,
+                pdf_filename
+            )
+
+            image_to_pdf(
+                destination,
+                pdf_destination
+            )
+
+            os.remove(destination)
+
+            filename = pdf_filename
+            destination = pdf_destination
 
         filesize = os.path.getsize(destination)
 
         record_document(
-    filename=filename,
-    category=category,
-    source="upload",
-    filepath=destination,
-    filesize=filesize,
-    uploaded_by=session.get("user_name")
-)
+            filename=filename,
+            category=category,
+            source="upload",
+            filepath=destination,
+            filesize=filesize,
+            uploaded_by=session.get("user_name")
+        )
+
         saved_files.append(filename)
 
     if not saved_files:
@@ -965,7 +1135,14 @@ def upload():
 def scan_save():
 
     category = request.form.get("category")
-    file = request.files.get("file")
+    file = request.files.get("file") 
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Read selected scanner output format
+# =====================================================
+
+    output_format = request.form.get("output_format")
 
     if not category or category not in CATEGORIES:
         return jsonify(
@@ -997,7 +1174,45 @@ def scan_save():
     )
 
     file.save(destination)
-
+    
+ # =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Convert scanned image to TXT using OCR
+# =====================================================
+    if output_format =="txt":
+        extracted_text = image_to_text(destination)
+        print("OCR RESULT:")
+        print(extracted_text)
+        text_filename = (
+            os.path.splitext(filename)[0]
+            + ".txt"
+        )
+        text_destination = os.path.join(
+            category_folder,
+            text_filename
+        )
+        with open(text_destination, "w") as f:
+            f.write(extracted_text)
+        os.remove(destination)
+        filename = text_filename
+        destination = text_destination
+           # =====================================================
+        # ABHISHEK CHANGE
+        # Purpose:
+        # Convert scanned text to PDF
+        # =====================================================
+    if output_format == "txt":
+        extracted_text = image_to_text(destination)
+        print("OCR RESULT:")
+        print(repr(extracted_text))
+            #====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Convert scanned image to PDF
+# =====================================================
+    elif output_format == "pdf":
+        pass
     filesize = os.path.getsize(destination)
 
     record_document(
@@ -1008,12 +1223,16 @@ def scan_save():
         filesize=filesize
     )
 
-    return jsonify(
-        success=True,
-        message=f"Scanned document saved to {category}.",
-        category=category,
-        filename=filename
-    )
+    response = {
+        "success": True,
+        "message": f"Scanned document saved to {category}.",
+        "category": category,
+        "filename": filename
+    }
+    print(response)
+    return jsonify(response)
+
+
 
 
 # =========================================================
@@ -1063,10 +1282,31 @@ def show_category(category):
         category_files=files
     )
 
+# =====================================================
+# ABHISHEK CHANGE
+# Purpose:
+# Preview file from category page
+# =====================================================
 
-# =========================================================
-# API — DASHBOARD STATISTICS
-# =========================================================
+@app.route("/preview/<category>/<filename>")
+def preview_file(category, filename):
+
+    if category not in CATEGORIES:
+        return "Category not found", 404
+
+    filepath = os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        CATEGORIES[category],
+        filename
+    )
+
+    if not os.path.exists(filepath):
+        return "File not found", 404
+
+    return send_file(
+        filepath,
+        as_attachment=False
+    )
 
 # =========================================================
 # API — DASHBOARD STATISTICS
@@ -1219,6 +1459,7 @@ def preview_document(doc_id):
 
 @app.route("/download/<int:doc_id>")
 def download_document(doc_id):
+    
 
     # =====================================================
     # ABHISHEK CHANGE
@@ -1264,6 +1505,11 @@ def download_document(doc_id):
         as_attachment=True,
         download_name=doc["filename"]
     )
+
+
+
+
+
 
 
 
