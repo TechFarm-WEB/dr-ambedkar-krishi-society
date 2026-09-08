@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,9 +9,9 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
+
 <body>
 
     <div class="container">
@@ -30,34 +31,23 @@
                 <i class="fa-solid fa-user"></i>
             </div>
 
-      <!-- =====================================================
+            <!-- =====================================================
      ABHISHEK CHANGE
      Purpose:
      Mobile number validation
      ===================================================== -->
-    <div class="form-group">
+            <div class="form-group">
 
-    <input
-        type="tel"
-        name="mobile"
-        pattern="[6-9]{1}[0-9]{9}"
-        maxlength="10"
-        placeholder=" "
-        required
-    >
+                <input type="tel" name="mobile" pattern="[6-9]{1}[0-9]{9}" maxlength="10" placeholder=" " required>
 
-    <label>Mobile Number</label>
+                <label>Mobile Number</label>
 
-    <i class="fa-solid fa-phone"></i>
+                <i class="fa-solid fa-phone"></i>
 
-    <small class="form-hint">
-        Example: 9876543210
-    </small>
-
-
-
-
-</div>
+                <small class="form-hint">
+                    Example: 9876543210
+                </small>
+            </div>
             <!-- Email -->
             <div class="form-group">
                 <input type="email" name="email" placeholder=" " required>
@@ -85,53 +75,35 @@
      Add Show / Hide Password functionality
      for registration password field
      ===================================================== -->
-<div class="form-group">
+            <div class="form-group">
 
-    <input
-        type="password"
-        name="password"
-        id="password"
-        placeholder=" "
-        required
-    >
+                <input type="password" name="password" id="password" placeholder=" " required>
 
-    <label>Password</label>
+                <label>Password</label>
 
-    <i class="fa-solid fa-lock"></i>
+                <i class="fa-solid fa-lock"></i>
 
-    <i
-        class="fa-solid fa-eye password-toggle"
-        onclick="togglePassword('password', this)"
-    ></i>
+                <i class="fa-solid fa-eye password-toggle" onclick="togglePassword('password', this)"></i>
 
-</div>
+            </div>
 
-           <!-- =====================================================
+            <!-- =====================================================
      ABHISHEK CHANGE
      Purpose:
      Add Show / Hide Password functionality
      for confirm password field
      ===================================================== -->
-<div class="form-group">
+            <div class="form-group">
 
-    <input
-        type="password"
-        name="confirm_password"
-        id="confirm_password"
-        placeholder=" "
-        required
-    >
+                <input type="password" name="confirm_password" id="confirm_password" placeholder=" " required>
 
-    <label>Confirm Password</label>
+                <label>Confirm Password</label>
 
-    <i class="fa-solid fa-lock"></i>
+                <i class="fa-solid fa-lock"></i>
 
-    <i
-        class="fa-solid fa-eye password-toggle"
-        onclick="togglePassword('confirm_password', this)"
-    ></i>
+                <i class="fa-solid fa-eye password-toggle" onclick="togglePassword('confirm_password', this)"></i>
 
-</div>
+            </div>
             <input id="btn" type="submit" value="Register">
 
             <p>
@@ -148,32 +120,34 @@
      Allow users to view or hide passwords
      during registration
      ===================================================== -->
-<script>
+    <script>
 
-function togglePassword(inputId, icon) {
+        function togglePassword(inputId, icon) {
 
-    const input = document.getElementById(inputId);
+            const input = document.getElementById(inputId);
 
-    if (input.type === "password") {
+            if (input.type === "password") {
 
-        input.type = "text";
+                input.type = "text";
 
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
 
-    } else {
+            } else {
 
-        input.type = "password";
+                input.type = "password";
 
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
-    }
-}
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
 
-</script>
+    </script>
 
 </body>
+
 </html>
 
 </body>
+
 </html>

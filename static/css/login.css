@@ -1,168 +1,373 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: sans-serif;
+/* =====================================================
+   Modification : Sakshi Sahu
+   Purpose     : Split-Layout Member Login Screen
+   Design Spec : Deep Forest Green & Crisp Minimalist White
+   ===================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-body{
-    margin: 0;
-    min-height: 100vh;
-    background: url("../img/bg.jpg") center/cover no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+:root {
+  --primary-green: #0d4636;
+  --primary-dark: #072e23;
+  --accent-green: #115c47;
+  --light-mint: #e8f5ef;
+  --border-color: #e2e8e5;
+  --border-focus: #0d4636;
+  --text-dark: #121c17;
+  --text-muted: #5e6d66;
+  --text-dim: #8b9992;
+  --font-stack: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
-.container
-{
-    width: 450px;
-    min-height: 780px;
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-stack);
+  background-color: #ffffff;
+  color: var(--text-dark);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
 
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+/* Outer Screen Wrapper */
+.login-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* =====================================================
+   LEFT SIDEBAR (Branding & Credentials Notice)
+   ===================================================== */
+.brand-sidebar {
+  width: 42%;
+  min-width: 420px;
+  background: radial-gradient(circle at 10% 20%, #155743 0%, var(--primary-green) 50%, var(--primary-dark) 100%);
+  padding: 56px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle background accent ring */
+.brand-sidebar::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  top: -150px;
+  right: -200px;
+  pointer-events: none;
+}
+
+.brand-icon-box {
+  width: 58px;
+  height: 58px;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 48px;
+}
+
+.hindi-char {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.brand-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 20px;
+}
+
+.brand-headline {
+  font-size: clamp(34px, 3.8vw, 48px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  margin-bottom: 28px;
+}
+
+.brand-subtext {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 360px;
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 16px 20px;
+  backdrop-filter: blur(6px);
+  max-width: 440px;
+}
+
+.badge-icon {
+  width: 34px;
+  height: 34px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.badge-text {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.45;
+}
+
+/* =====================================================
+   RIGHT VIEWPORT (Form Area)
+   ===================================================== */
+.form-viewport {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  background-color: #fcfdfd;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 460px;
+}
+
+.sub-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--primary-green);
+  margin-bottom: 12px;
+}
+
+.form-title {
+  font-size: 38px;
+  font-weight: 800;
+  color: #102019;
+  letter-spacing: -0.8px;
+  margin-bottom: 8px;
+}
+
+.form-subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 36px;
+}
+
+/* Error banner from Flask backend */
+.alert-error {
+  background-color: #fdf2f2;
+  border: 1px solid #f8b4b4;
+  color: #c81e1e;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+/* Form Groups */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #23342c;
+}
+
+.input-box {
+  position: relative;
+  width: 100%;
+}
+
+.input-box input {
+  width: 100%;
+  height: 54px;
+  padding: 0 18px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text-dark);
+  background-color: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-box input::placeholder {
+  color: #a1b0a8;
+}
+
+.input-box input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(13, 70, 54, 0.1);
+}
+
+.input-box.has-toggle input {
+  padding-right: 68px;
+}
+
+.btn-toggle-pw {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-green);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.btn-toggle-pw:hover {
+  text-decoration: underline;
+}
+
+/* Submit CTA */
+.btn-submit {
+  width: 100%;
+  height: 56px;
+  background-color: var(--primary-green);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-submit:hover {
+  background-color: var(--accent-green);
+}
+
+.btn-submit:active {
+  transform: scale(0.99);
+}
+
+/* Auxiliary Links */
+.form-links {
+  text-align: center;
+  margin-top: -6px;
+}
+
+.link-forgot {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-green);
+  text-decoration: none;
+}
+
+.link-forgot:hover {
+  text-decoration: underline;
+}
+
+.form-footer {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.form-footer p {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* Floating Admin tag on bottom right */
+.admin-quick-tag {
+  position: absolute;
+  bottom: 24px;
+  right: 28px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #a4b3ac;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #f1f4f2;
+}
+
+.admin-quick-tag:hover {
+  color: var(--primary-green);
+  background-color: #e5ece8;
+}
+
+/* =====================================================
+   RESPONSIVE (Tablets & Mobile)
+   ===================================================== */
+@media (max-width: 900px) {
+  .login-wrapper {
     flex-direction: column;
+  }
 
-    border-radius: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.5);
-
-    padding: 30px;
-}
-
-h2
-{
-    color: #ffff;
-    font-size: 2em;
-    text-transform: uppercase;
-    padding: 20px 0;
-}
-
-.form-group
-{
-    position: relative;
-    width: 330px;
-    margin: 30px 0;
-    border-bottom: 3px solid #ffff;
-}
-
-.form-group input
-{
+  .brand-sidebar {
     width: 100%;
-    height: 50px;
-    padding: 0 35px 0 10px;
-    font-size: 1.2em;
-    background-color: transparent;
-    border: none;
-    outline: none;
-    color: #fff;
+    min-width: 100%;
+    padding: 36px 28px;
+  }
+
+  .brand-icon-box {
+    margin-bottom: 24px;
+  }
+
+  .brand-headline {
+    margin-bottom: 16px;
+  }
+
+  .brand-badge {
+    margin-top: 32px;
+  }
+
+  .form-viewport {
+    padding: 40px 24px 70px;
+  }
 }
-
-.form-group label
-{
-    position: absolute;
-    left: 10px;
-    top: 15px;
-    font-size: 1.1em;
-    color: #fff;
-    transition: 0.5s;
-    pointer-events: none;
-}
-.form-group input:focus ~ label,
-.form-group input:not(:placeholder-shown) ~ label
-{
-    top: -20px;
-    font-size: 0.9em;
-}
-
-.form-group i
-{
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
-    color: #ffff;
-    font-size: 1.2em;
-}
-
-/* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Show / Hide Password icon
-   ===================================================== */
-
-.password-toggle
-{
-    right: 40px !important;
-    cursor: pointer;
-}
-/* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Position Show / Hide Password icon
-   ===================================================== */
-
-.password-toggle
-{
-    right: 40px !important;
-    cursor: pointer;
-}
-p
-{
-    text-align: center;
-    color: #fff;
-    margin: 10px 0;
-}
-
-p>a
-{
-    text-decoration: none;
-    color: #fff;
-    font-weight: 600;
-}
-
-p>a:hover
-{
-    text-decoration: underline;
-    font-style: italic;
-}
-
-#btn
-{
-    width: 100%;
-    height: 50px;
-    border-radius: 40px;
-    border: none;
-    font-size: 1.5em;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin: 10px 0;
-    cursor: pointer;
-    transition: all 0.5s;
-}
-
-/* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Login error message styling
-   ===================================================== */
-
-.error-message{
-    color: red;
-    text-align: center;
-    margin-bottom: 15px;
-    font-weight: 600;
-}
-
-#btn:hover
-{
-    background: rgba(0, 0, 0, 0.3);
-    color: #fff;
-}
-
-
-    

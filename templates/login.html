@@ -1,129 +1,121 @@
+<!-- Modification : Sakshi Sahu 
+Purpose: Transform the current centered glassmorphic card login page into the two-column split layout shown in the target design, -->
+
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Login - Dr. Ambedkar Krishi Society</title>
 
-    <title>Animated Login Form</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/login.css') }}">
-
-    <!-- =====================================================
-         ABHISHEK CHANGE
-         Purpose:
-         Enable Font Awesome icons
-         ===================================================== -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        
-    >
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
-     
-    <div class="container">
-        <h2>Login</h2>
-        {% if error %}
-<p class="error-message">{{ error }}</p>
-{% endif %}
 
-        <form method="POST" action="/login">
-            
-           <!-- =====================================================
-     ABHISHEK CHANGE
-     Purpose:
-     Allow login using email or mobile number
-     ===================================================== -->
-<div class="form-group">
-    <input type="text" name="email" required>
-    <label>Email or Mobile Number</label>
-    <i class="fa-solid fa-envelope"></i>
-</div>
-     <div class="form-group">
+<body>
 
-    <input
-        type="password"
-        name="password"
-        id="password"
-        required
-    >
+    <div class="login-wrapper">
 
-    <label>Password</label>
+        <!-- Left Brand Column -->
+        <aside class="brand-sidebar">
+            <div class="brand-top">
+                <div class="brand-icon-box">
+                    <span class="hindi-char">क</span>
+                </div>
+                <p class="brand-label">KRISHI SOCIETY</p>
+                <h1 class="brand-headline">Secure access<br>for authorised<br>members.</h1>
+                <p class="brand-subtext">Access is restricted to users registered by the Society Administrator.</p>
+            </div>
 
-    <i class="fa-solid fa-lock"></i>
+            <div class="brand-badge">
+                <div class="badge-icon">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <p class="badge-text">Your account is protected by password and security verification.</p>
+            </div>
+        </aside>
 
-    <i
-        class="fa-solid fa-eye password-toggle"
-        onclick="togglePassword('password', this)"
-    ></i>
+        <!-- Right Form Column -->
+        <main class="form-viewport">
 
-</div>
+            <div class="form-card">
 
-          
+                <header class="form-header">
+                    <span class="sub-badge">MEMBER LOGIN</span>
+                    <h2 class="form-title">Welcome back</h2>
+                    <p class="form-subtitle">Sign in using the credentials provided to you.</p>
+                </header>
 
+                {% if error %}
+                <div class="alert-error" role="alert">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>{{ error }}</span>
+                </div>
+                {% endif %}
 
+                <form action="/login" method="POST" class="auth-form" autocomplete="on">
 
-            <p>
-                <!-- =====================================================
-     ABHISHEK CHANGE
-     Purpose:
-     Remember Me checkbox
-     ===================================================== -->
+                    <!-- Hidden default for remember_me flag -->
+                    <input type="hidden" name="remember_me" value="on">
 
-<div class="remember-me">
+                    <div class="input-block">
+                        <label for="email-field" class="input-label">Email or Username</label>
+                        <div class="input-box">
+                            <input type="text" id="email-field" name="email" placeholder="Enter your email or username"
+                                required autofocus>
+                        </div>
+                    </div>
 
-    <input
-        type="checkbox"
-        name="remember_me"
-        id="remember_me"
-    >
+                    <div class="input-block">
+                        <label for="password-field" class="input-label">Password</label>
+                        <div class="input-box has-toggle">
+                            <input type="password" id="password-field" name="password" placeholder="Enter your password"
+                                required>
+                            <button type="button" class="btn-toggle-pw" id="togglePasswordBtn"
+                                aria-label="Toggle password visibility">Show</button>
+                        </div>
+                    </div>
 
-    <label for="remember_me">
-        Remember Me
-    </label>
+                    <button type="submit" class="btn-submit">Sign In</button>
 
-</div>
-                <!-- =====================================================
-     ABHISHEK CHANGE
-     Purpose:
-     Open Forgot Password page
-     ===================================================== -->
+                    <div class="form-links">
+                        <a href="/forgot-password" class="link-forgot">Forgot Password?</a>
+                    </div>
 
-<a href="/forgot-password">Forgot Password?</a>
-            </p>
+                    <footer class="form-footer">
+                        <p>Registration is disabled. Contact the Administrator if you need access.</p>
+                    </footer>
 
-            <input id="btn" type="submit" value="Login">
+                </form>
 
-            <p>Don't have an account? <a href="/register">Register</a></p>
+            </div>
 
-        </form>
+            <!-- Quick Link to Admin view / System tag -->
+            <a href="/users" class="admin-quick-tag">Admin</a>
+
+        </main>
+
     </div>
 
-
-
-
     <script>
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+        const pwInput = document.getElementById('password-field');
 
-function togglePassword(inputId, icon) {
-
-    const input = document.getElementById(inputId);
-
-    if (input.type === "password") {
-
-        input.type = "text";
-
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
-
-    } else {
-
-        input.type = "password";
-
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
-    }
-}
-
-</script>
+        if (toggleBtn && pwInput) {
+            toggleBtn.addEventListener('click', function () {
+                const isPassword = pwInput.type === 'password';
+                pwInput.type = isPassword ? 'text' : 'password';
+                toggleBtn.textContent = isPassword ? 'Hide' : 'Show';
+            });
+        }
+    </script>
 
 </body>
+
 </html>

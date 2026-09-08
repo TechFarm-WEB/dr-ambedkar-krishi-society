@@ -693,13 +693,6 @@ def forgot_password():
         error=None
     )
 
-
-
-
-
-
-
-
 # =========================================================
 # DASHBOARD
 # =========================================================
@@ -760,9 +753,6 @@ def users():
         "users.html",
         users=users
     )
-
-
-
 
 # =========================================================
 # ABHISHEK CHANGE
@@ -870,11 +860,6 @@ def change_role(user_id):
 
     return redirect("/users")
 
-
-
-
-
- 
 # =========================================================
 # UPLOAD DOCUMENT  (Upload New Document panel)
 # =========================================================
@@ -1149,8 +1134,6 @@ def api_stats():
         scanned_documents=scanned_documents,
         uploaded_documents=uploaded_documents
     )
-
-
 # =========================================================
 # API — CATEGORY BREAKDOWN (for the Categories popup)
 # =========================================================
@@ -1174,8 +1157,6 @@ def api_categories():
     ]
 
     return jsonify(data)
-
-
 
 # =========================================================
 # ABHISHEK CHANGE
@@ -1264,11 +1245,6 @@ def download_document(doc_id):
         as_attachment=True,
         download_name=doc["filename"]
     )
-
-
-
-
-
 # =========================================================
 # ABHISHEK CHANGE
 # Purpose:
