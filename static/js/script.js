@@ -356,7 +356,9 @@ function refreshStats() {
   var searchForm = document.getElementById("searchForm");
   var searchResultInfo = document.getElementById("searchResultInfo");
 
-  function renderDocuments(docs) {
+ function renderDocuments(docs) {
+
+
     if (!docs.length) {
       tableBody.innerHTML =
         '<tr class="state-row"><td colspan="7">' +
@@ -389,7 +391,7 @@ escapeHtml(doc.uploaded_by || "Unknown") +
 formatDate(doc.uploaded_at) +
 "</td>" +
           '<td><span class="status">Active</span></td>' +
-  /* =====================================================
+          /* =====================================================
    ABHISHEK CHANGE
    Purpose:
    Enable document download from dashboard
@@ -486,12 +488,22 @@ doc.id +
   }
 
   function loadDocuments(params) {
+
+  
+
     var query = new URLSearchParams();
+
     if (params) {
-      if (params.q) query.set("q", params.q);
-      if (params.category) query.set("category", params.category);
-      if (params.date) query.set("date", params.date);
+        if (params.q) query.set("q", params.q);
+        if (params.category) query.set("category", params.category);
+        if (params.date) query.set("date", params.date);
     }
+
+    tableBody.innerHTML =
+        '<tr class="state-row"><td colspan="6">Loading documents...</td></tr>';
+
+    cardList.innerHTML =
+        '<p class="list-empty">Loading documents...</p>';
 
     tableBody.innerHTML =
       '<tr class="state-row"><td colspan="6">Loading documents…</td></tr>';
@@ -519,23 +531,187 @@ doc.id +
       });
   }
 
+  // if (searchForm) {
+  //   searchForm.addEventListener("submit", function (e) {
+  //     e.preventDefault();
+  //     var formData = new FormData(searchForm);
+  //     loadDocuments({
+  //       q: formData.get("q"),
+  //       category: formData.get("category"),
+  //       date: formData.get("date"),
+  //     });
+  //   });
+  // }
   if (searchForm) {
-    searchForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var formData = new FormData(searchForm);
-      loadDocuments({
-        q: formData.get("q"),
-        category: formData.get("category"),
-        date: formData.get("date"),
-      });
+
+  searchForm.addEventListener("submit", function (e) {
+
+    e.preventDefault();
+    // alert("SEARCH CLICKED");
+
+    var formData = new FormData(searchForm);
+
+    fetch(
+      "/api/documents?q=" +
+      encodeURIComponent(formData.get("q") || "") +
+      "&category=" +
+      encodeURIComponent(formData.get("category") || "") +
+      "&date=" +
+      encodeURIComponent(formData.get("date") || "")
+    )
+
+    .then(function (res) {
+      return res.json();
+    })
+
+    .then(function (docs) {
+      
+      // alert("DOCS RECEIVED = " + docs.length);
+      // alert("OPENING MODAL");
+      categoryDocumentsModal.classList.add("is-visible");
+
+      document.getElementById(
+        "categoryDocumentsTitle"
+      ).textContent = "Search Results";
+
+      if (!docs.length) {
+
+        categoryDocumentsBody.innerHTML =
+          "<p class='list-empty'>No documents found.</p>";
+
+        return;
+      }
+
+      categoryDocumentsBody.innerHTML =
+
+      '<div class="table-scroll">' +
+      '<table>' +
+      '<thead>' +
+      '<tr>' +
+      '<th>Document</th>' +
+      '<th>Uploaded By</th>' +
+      '<th>Date</th>' +
+      '<th>Action</th>' +
+      '</tr>' +
+      '</thead>' +
+      '<tbody>' +
+
+      docs.map(function(doc){
+
+        return (
+
+          '<tr>' +
+
+          '<td>' +
+          escapeHtml(doc.filename) +
+          '</td>' +
+
+          '<td>' +
+          escapeHtml(doc.uploaded_by || "Unknown") +
+          '</td>' +
+
+          '<td>' +
+          formatDate(doc.uploaded_at) +
+          '</td>' +
+
+          '<td>' +
+          '<a href="/preview/' +
+          doc.id +
+          '" class="btn btn-outline">👁 Preview</a> ' +
+          '<a href="/download/' +
+          doc.id +
+          '" class="btn btn-outline">Download</a>' +
+          (USER_ROLE === "admin"
+            ? ' <a href="/delete/' +
+              doc.id +
+              '" class="btn btn-outline" onclick="return confirm(\'Delete this document?\')">Delete</a>'
+            : '') +
+          '</td>' +
+
+          '</tr>'
+
+        );
+
+      }).join("") +
+
+      '</tbody>' +
+      '</table>' +
+      '</div>';
+
     });
-  }
+
+  });
+
+}
+console.log("SEARCH BLOCK LOADED");
 
   /* -------------------------------------------------------------
      RECENT ACTIVITY
      ------------------------------------------------------------- */
   var activityTableBody = document.getElementById("activityTableBody");
   var activityCardList = document.getElementById("activityCardList");
+//   
+var activityModal =
+  document.getElementById("activityModal");
+
+var openActivityModal =
+  document.getElementById("openActivityModal");
+
+var closeActivityModal =
+  document.getElementById("closeActivityModal");
+
+var activityModalList =
+  document.getElementById("activityModalList");
+
+
+if (openActivityModal && activityModal) {
+
+  openActivityModal.addEventListener(
+    "click",
+    function () {
+
+      activityModal.classList.add("is-visible");
+
+    }
+  );
+
+}
+
+
+if (closeActivityModal && activityModal) {
+
+  closeActivityModal.addEventListener(
+    "click",
+    function () {
+
+      activityModal.classList.remove("is-visible");
+
+    }
+  );
+
+}
+
+
+/* Close popup when clicking outside */
+
+if (activityModal) {
+
+  activityModal.addEventListener(
+    "click",
+    function (e) {
+
+      if (e.target === activityModal) {
+
+        activityModal.classList.remove("is-visible");
+
+      }
+
+    }
+  );
+
+}
+
+
 
   function renderActivity(items) {
     if (!items.length) {
@@ -563,6 +739,49 @@ doc.id +
         );
       })
       .join("");
+
+    /* Recent Activity Popup Data */
+
+if (activityModalList) {
+
+  activityModalList.innerHTML = items
+    .map(function (item) {
+
+      var icon =
+        item.source === "scanner"
+          ? "fa-print"
+          : "fa-cloud-arrow-up";
+
+      return (
+        '<div class="activity-row">' +
+
+          '<div class="activity-icon">' +
+            '<i class="fa-solid ' + icon + '"></i>' +
+          '</div>' +
+
+          '<div class="activity-text">' +
+
+            '<div class="who">' +
+              escapeHtml(item.user) +
+            '</div>' +
+
+            '<div>' +
+              escapeHtml(item.action) +
+            '</div>' +
+
+            '<div class="activity-date">' +
+              formatDate(item.date) +
+            '</div>' +
+
+          '</div>' +
+
+        '</div>'
+      );
+
+    })
+    .join("");
+
+}
 
     activityCardList.innerHTML = items
       .map(function (item) {
@@ -682,7 +901,7 @@ doc.id +
             showToast(result.data.message, false);
             uploadForm.reset();
             renderFileList([]);
-            refreshEverything();
+            // refreshEverything();
           } else {
             showToast(
               result.data.message || "Upload failed. Please try again.",
@@ -948,11 +1167,477 @@ doc.id +
         });
     });
   }
+/* -------------------------------------------------------------
+   CATEGORY DOCUMENTS MODAL
+   added by gaurav on 28/08/2026
+------------------------------------------------------------- */
 
+var categoryDocumentsModal =
+  document.getElementById("categoryDocumentsModal");
+
+var categoryDocumentsBody =
+  document.getElementById("categoryDocumentsBody");
+
+var categoryDocumentsClose =
+  document.getElementById("categoryDocumentsClose");
+
+var categoryTriggers =
+  document.querySelectorAll(".category-modal-trigger");
+
+function closeCategoryDocumentsModal() {
+  categoryDocumentsModal.classList.remove("is-visible");
+}
+
+if (categoryDocumentsClose) {
+  categoryDocumentsClose.addEventListener(
+    "click",
+    closeCategoryDocumentsModal
+  );
+}
+
+if (categoryDocumentsModal) {
+  categoryDocumentsModal.addEventListener(
+    "click",
+    function (e) {
+      if (e.target === categoryDocumentsModal) {
+        closeCategoryDocumentsModal();
+      }
+    }
+  );
+}
+
+categoryTriggers.forEach(function (card) {
+
+  card.addEventListener("click", function () {
+
+    var category =
+      card.getAttribute("data-category");
+
+    document.getElementById(
+      "categoryDocumentsTitle"
+    ).textContent =
+      category + " Documents";
+
+    categoryDocumentsModal.classList.add(
+      "is-visible"
+    );
+
+    categoryDocumentsBody.innerHTML =
+      "<p>Loading documents...</p>";
+
+    fetch(
+      "/api/documents?category=" +
+      encodeURIComponent(category)
+    )
+
+      .then(function (res) {
+        return res.json();
+      })
+
+      .then(function (docs) {
+
+        if (!docs.length) {
+
+          categoryDocumentsBody.innerHTML =
+            "<p class='list-empty'>No documents found in this category.</p>";
+
+          return;
+        }
+
+        categoryDocumentsBody.innerHTML =
+
+          '<div class="table-scroll">' +
+          '<table>' +
+          '<thead>' +
+          '<tr>' +
+          '<th>Document</th>' +
+          '<th>Uploaded By</th>' +
+          '<th>Date</th>' +
+          '<th>Action</th>' +
+          '</tr>' +
+          '</thead>' +
+          '<tbody>' +
+
+          docs.map(function (doc) {
+
+            return (
+
+              '<tr>' +
+
+              '<td>' +
+              escapeHtml(doc.filename) +
+              '</td>' +
+
+              '<td>' +
+              escapeHtml(doc.uploaded_by || "Unknown") +
+              '</td>' +
+
+              '<td>' +
+              formatDate(doc.uploaded_at) +
+              '</td>' +
+
+             '<td>' +
+    '<a href="/preview/' + doc.id + '">👁 Preview</a> ' +
+    '<a href="/download/' + doc.id + '">Download</a>' +
+'</td>' +
+
+              '</tr>'
+
+            );
+
+          }).join("") +
+
+          '</tbody>' +
+          '</table>' +
+          '</div>';
+
+      })
+
+      .catch(function () {
+
+        categoryDocumentsBody.innerHTML =
+          "<p class='list-empty'>Unable to load documents.</p>";
+
+      });
+
+  });
+
+});
+
+var addCategoryBtn =
+document.getElementById("addCategoryBtn");
+
+var addCategoryModal =
+document.getElementById("addCategoryModal");
+
+var addCategoryClose =
+document.getElementById("addCategoryClose");
+
+if(addCategoryBtn){
+
+  addCategoryBtn.addEventListener(
+    "click",
+    function(){
+
+      addCategoryModal.classList.add(
+        "is-visible"
+      );
+
+    }
+  );
+
+}
+
+if(addCategoryClose){
+
+  addCategoryClose.addEventListener(
+    "click",
+    function(){
+
+      addCategoryModal.classList.remove(
+        "is-visible"
+      );
+
+    }
+  );
+
+}
+var saveCategoryBtn =
+document.getElementById("saveCategoryBtn");
+
+if(saveCategoryBtn){
+
+    saveCategoryBtn.addEventListener(
+        "click",
+        function(){
+
+           var categoryName =
+document.getElementById(
+    "newCategoryName"
+).value.trim();
+
+
+if(!categoryName){
+
+    alert("Please enter category name");
+
+    return;
+}
+
+
+
+fetch("/api/category/create", {
+
+    method: "POST",
+
+    headers: {
+        "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+        category: categoryName
+
+    })
+
+})
+
+.then(function(res){
+
+    return res.json();
+
+})
+
+.then(function(data){
+if(data.success){
+
+    alert("Category Created Successfully");
+
+    document.getElementById(
+        "newCategoryName"
+    ).value = "";
+
+    addCategoryModal.classList.remove(
+        "is-visible"
+    );
+    location.reload();
+
+}
+
+    else{
+
+        alert(
+            data.message ||
+            "Unable to create category"
+        );
+
+    }
+
+})
+.catch(function(){
+
+    alert("Server Error");
+
+});
+
+
+        }
+    );
+
+}
+
+document.addEventListener(
+    "click",
+    function(event){
+
+        const deleteBtn =
+            event.target.closest(
+                ".delete-category-btn"
+            );
+
+        if(deleteBtn){
+
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+
+            const categoryName =
+                deleteBtn.dataset.category;
+
+           if(
+    confirm(
+    "⚠ WARNING\n\n" +
+    "Deleting this category cannot be undone.\n\n" +
+    "The following data will be permanently removed:\n\n" +
+    "• Category\n" +
+    "• All files inside the category\n" +
+    "• All document records\n\n" +
+    "Category: " + categoryName +
+    "\n\nProceed with deletion?"
+)
+){
+
+    fetch(
+        "/api/category/delete",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+
+            body: JSON.stringify({
+                category: categoryName
+            })
+        }
+    )
+
+    .then(function(response){
+
+        return response.json();
+
+    })
+
+    .then(function(data){
+
+        alert(data.message);
+
+        if(data.success){
+
+            location.reload();
+
+        }
+
+    })
+
+    .catch(function(){
+
+        alert(
+            "Delete Failed"
+        );
+
+    });
+
+}
+
+            return false;
+
+        }
+
+    },
+    true
+);
+
+
+
+var archiveOverviewBtns =
+document.querySelectorAll(
+    ".archiveOverviewBtn"
+);
+
+var archiveModal =
+document.getElementById(
+    "archiveModal"
+);
+
+var archiveModalClose =
+document.getElementById(
+    "archiveModalClose"
+);
+
+archiveOverviewBtns.forEach(function(btn){
+
+    btn.addEventListener(
+        "click",
+        function(){
+
+            if(!archiveModal){
+                return;
+            }
+
+            archiveModal.classList.add(
+                "is-visible"
+            );
+
+            var archiveBody =
+                document.getElementById(
+                    "archiveDocumentsBody"
+                );
+
+            if(archiveBody){
+                archiveBody.innerHTML =
+                    "<p class='list-empty'>Loading archive...</p>";
+            }
+
+            fetch("/api/archive")
+
+            .then(function(res){
+
+                return res.json();
+
+            })
+
+            .then(function(docs){
+
+                if(!archiveBody){
+                    return;
+                }
+
+                if(!docs.length){
+
+                    archiveBody.innerHTML =
+                        "<p class='list-empty'>No archived documents found.</p>";
+
+                    return;
+                }
+
+                archiveBody.innerHTML =
+                    docs.map(function(doc){
+
+                        return `
+                            <div class="file-row">
+
+                                <div class="file-name">
+
+                                    <strong>${doc.filename}</strong>
+
+                                    <br>
+
+                                    ${doc.category}
+
+                                    <br>
+
+                                    ${doc.document_date || ''}
+
+                                </div>
+
+                            </div>
+                        `;
+
+                    }).join("");
+
+            })
+
+            .catch(function(){
+
+                if(archiveBody){
+
+                    archiveBody.innerHTML =
+                        "<p class='list-empty'>Unable to load archive.</p>";
+
+                }
+
+            });
+
+        }
+    );
+
+});
+
+if(
+    archiveModalClose &&
+    archiveModal
+){
+
+    archiveModalClose.addEventListener(
+        "click",
+        function(){
+
+            archiveModal.classList.remove(
+                "is-visible"
+            );
+
+        }
+    );
+
+}
   /* -------------------------------------------------------------
      INITIAL LOAD
      ------------------------------------------------------------- */
   refreshStats();
   refreshActivity();
-  loadDocuments(null);
+
 });
+
+  

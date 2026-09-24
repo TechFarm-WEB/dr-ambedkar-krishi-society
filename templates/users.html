@@ -2,98 +2,240 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management</title>
-
-    <!-- =====================================================
-         ABHISHEK CHANGE
-         Purpose:
-         Use main dashboard styling
-         ===================================================== -->
+    <!-- Aapki main dashboard global styling file -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- FontAwesome for professional icons -->
+    <link rel="stylesheet" href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css>
 </head>
 <body>
 
-<div class="page-section">
+<div class="user-mgmt-container">
+    <section class="panel">
 
-    <h2>User Management</h2>
+        <div class="section-title">
+            <h2>
+                <i class="fa-solid fa-users"></i>
+                User Management
+            </h2>
+            <!-- Trigger Button to Open Popup Modal -->
+            <button class="btn btn-add-user" id="openModalBtn">
+                <i class="fa-solid fa-user-plus"></i> Add New User
+            </button>
+        </div>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-<th>NAME</th>
-<th>EMAIL</th>
-<th>MOBILE</th>
-<th>ROLE</th>
-<th>LAST LOGIN</th>
-<th>ACTIONS</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-        {% for user in users %}
-        <tr>
-            <td>{{ user["id"] }}</td>
-<td>{{ user["name"] }}</td>
-<td>{{ user["email"] }}</td>
-<td>{{ user["mobile"] }}</td>
-<td>{{ user["role"] }}</td>
-<td>{{ user["last_login"] or "Never" }}</td>
-   <td>
-
-    <!-- =====================================================
-         ABHISHEK CHANGE
-         Purpose:
-         Change user role
-         ===================================================== -->
-
-    {% if user.id != session.get("user_id") %}
-
-        <a href="/change-role/{{ user.id }}">
-
-            {% if user.role == "user" %}
-                Make Admin
-            {% else %}
-                Make User
+        <!-- Flash messages for Success / Error notifications -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fa-solid {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
             {% endif %}
-
-        </a>
-
-        |
+        {% endwith %}
 
         <!-- =====================================================
-             ABHISHEK CHANGE
-             Purpose:
-             Delete user
+             MOBILE VIEW (Professional Cards Mode)
              ===================================================== -->
+        <div class="mobile-user-cards">
+            {% for user in users %}
+            <div class="user-card">
+                
+                <div class="user-card-header">
+                    <span class="user-name">{{ user["name"] }}</span>
+                    <span class="user-id">ID: {{ user["id"] }}</span>
+                </div>
 
-        <a href="/delete-user/{{ user.id }}"
-           onclick="return confirm('Delete this user?')">
-           Delete
+                <div class="user-info-body">
+                    <div class="user-info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ user["email"] }}</span>
+                    </div>
+
+                    <div class="user-info-row">
+                        <span class="info-label">Mobile:</span>
+                        <span class="info-value">{{ user["mobile"] }}</span>
+                    </div>
+
+                    <div class="user-info-row">
+                        <span class="info-label">Role:</span>
+                        <span class="info-value">
+                            {% if user["role"] == "admin" %}
+                                <span class="role-badge admin-badge">Admin</span>
+                            {% else %}
+                                <span class="role-badge user-badge">User</span>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="user-info-row">
+                        <span class="info-label">Last Login:</span>
+                        <span class="info-value">{{ user["last_login"] or "Never" }}</span>
+                    </div>
+                </div>
+
+                <!-- Mobile Action Buttons -->
+                <div class="card-actions">
+                    {% if user.id != session.get("user_id") %}
+                        <a href="/change-role/{{ user.id }}" class="btn btn-outline btn-sm">
+                            {% if user.role == "user" %}
+                                <i class="fa-solid fa-user-shield"></i> Make Admin
+                            {% else %}
+                                <i class="fa-solid fa-user"></i> Make User
+                            {% endif %}
+                        </a>
+                        <a href="/delete-user/{{ user.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this user?')">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </a>
+                    {% else %}
+                        <span class="btn-protected-tag">
+                            <i class="fa-solid fa-lock"></i> Protected
+                        </span>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- =====================================================
+             DESKTOP VIEW (Table Mode)
+             ===================================================== -->
+        <div class="table-scroll desktop-users">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NAME</th>
+                        <th>EMAIL</th>
+                        <th>MOBILE</th>
+                        <th>ROLE</th>
+                        <th>LAST LOGIN</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user["id"] }}</td>
+                        <td>{{ user["name"] }}</td>
+                        <td>{{ user["email"] }}</td>
+                        <td>{{ user["mobile"] }}</td>
+                        <td>
+                            {% if user["role"] == "admin" %}
+                                <span class="role-badge admin-badge">Admin</span>
+                            {% else %}
+                                <span class="role-badge user-badge">User</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user["last_login"] or "Never" }}</td>
+                        <td>
+                            {% if user.id != session.get("user_id") %}
+                                <a href="/change-role/{{ user.id }}" class="btn btn-outline">
+                                    {% if user.role == "user" %}Make Admin{% else %}Make User{% endif %}
+                                </a>
+                                |
+                                <a href="/delete-user/{{ user.id }}" class="btn btn-danger-link" onclick="return confirm('Delete this user?')">
+                                    Delete
+                                </a>
+                            {% else %}
+                                <span class="desktop-protected">Protected</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <br>
+        <a href="/dashboard" class="btn btn-back-dashboard">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
         </a>
 
-    {% else %}
-
-        Protected
-
-    {% endif %}
-
-</td>
-</td>
-        </tr>
-        {% endfor %}
-
-        </tbody>
-    </table>
-
-    <br>
-
-    <a href="/dashboard" class="btn">
-        Back to Dashboard
-    </a>
-
+    </section>
 </div>
+
+<!-- =====================================================
+     NEW USER REGISTRATION POPUP MODAL
+     ===================================================== -->
+<div class="modal-overlay" id="userModal">
+    <div class="modal-card">
+        <header class="modal-header">
+            <h3><i class="fa-solid fa-user-plus"></i> Register New User</h3>
+            <button class="modal-close-btn" id="closeModalBtn">&times;</button>
+        </header>
+        
+        <form action="/create-user" method="POST" class="modal-form">
+            <div class="form-group">
+                <label for="reg-name">Full Name</label>
+                <input type="text" id="reg-name" name="name" placeholder="Enter full name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reg-email">Email Address</label>
+                <input type="email" id="reg-email" name="email" placeholder="name@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reg-mobile">Mobile Number</label>
+                <input type="tel" id="reg-mobile" name="mobile" placeholder="Enter 10-digit mobile number" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-password">Temporary Password</label>
+                <input type="password" id="reg-password" name="password" placeholder="Create temporary password" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-role">System Role</label>
+                <select id="reg-role" name="role" required>
+                    <option value="user" selected>User (Standard Member)</option>
+                    <option value="admin">Admin (Full System Controller)</option>
+                </select>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" id="cancelModalBtn">Cancel</button>
+                <button type="submit" class="btn btn-submit-reg">Create Account</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript to control the Popup Modal states -->
+<script>
+    const modal = document.getElementById('userModal');
+    const openBtn = document.getElementById('openModalBtn');
+    // alert(openBtn ? "BUTTON FOUND" : "BUTTON NOT FOUND");
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelModalBtn');
+
+    openBtn.addEventListener('click', () => {
+        // alert("ADD USER CLICKED");
+        modal.classList.add('active');
+        // alert(modal.className);
+        document.body.style.overflow = 'hidden'; // Base page scroll stop karne ke liye
+    });
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Modal ke bahr touch karne par close hoga
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+</script>
 
 </body>
 </html>

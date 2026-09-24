@@ -12,313 +12,325 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Society Document Management System </title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Society Document Management System </title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer">
-  <link rel="stylesheet" href="../static/css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="../static/css/style.css">
 </head>
 
 <body data-selected-category="{{ selected_category or '' }}">
 
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
-  <!-- Live region for upload / scan confirmations -->
-  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+<!-- Live region for upload / scan confirmations -->
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
-  <div class="app-shell">
+<div class="app-shell">
 
-    <!-- =========================================================
+  <!-- =========================================================
        SIDEBAR NAVIGATION
        ========================================================= -->
-    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+  <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
 
-      <div class="sidebar-brand">
-        <div class="brand-icon" aria-hidden="true"><i class="fa-solid fa-folder-tree"></i></div>
-        <div class="brand-text">
-          <div class="name">Society Archive</div>
-          <div class="tagline">Digital Document Management</div>
-        </div>
-        <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Close navigation menu">
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-        </button>
+    <div class="sidebar-brand">
+      <div class="brand-icon" aria-hidden="true"><i class="fa-solid fa-folder-tree"></i></div>
+      <div class="brand-text">
+        <div class="name">Society Archive</div>
+        <div class="tagline">Digital Document Management</div>
+      </div>
+      <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Close navigation menu">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <div class="nav-group">
+        <div class="nav-group-label">Main</div>
+        <a href="#dashboard" class="nav-link is-active">
+          <i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Dashboard
+        </a>
       </div>
 
-      <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-label">Documents</div>
+        <a href="#documents" class="nav-link">
+          <i class="fa-solid fa-file-lines" aria-hidden="true"></i> All Documents
+        </a>
+        <a href="#categories" class="nav-link">
+          <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Categories
+        </a>
+        <a href="#upload-records" class="nav-link">
+          <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload Records
+        </a>
+        <a href="#scanner" class="nav-link">
+          <i class="fa-solid fa-print" aria-hidden="true"></i> Scanner
+        </a>
+      </div>
 
-        <div class="nav-group">
-          <div class="nav-group-label">Main</div>
-          <a href="#dashboard" class="nav-link is-active">
-            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Dashboard
-          </a>
-        </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Analytics</div>
+        <a href="#reports" class="nav-link">
+          <i class="fa-solid fa-chart-column" aria-hidden="true"></i> Reports
+        </a>
+        <a href="#recent-activity" class="nav-link">
+          <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Recent Activity
+        </a>
+      </div>
 
-        <div class="nav-group">
-          <div class="nav-group-label">Documents</div>
-          <a href="#documents" class="nav-link">
-            <i class="fa-solid fa-file-lines" aria-hidden="true"></i> All Documents
-          </a>
-          <a href="#categories" class="nav-link">
-            <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Categories
-          </a>
-          <a href="#upload-records" class="nav-link">
-            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload Records
-          </a>
-          <a href="#scanner" class="nav-link">
-            <i class="fa-solid fa-print" aria-hidden="true"></i> Scanner
-          </a>
-        </div>
-
-        <div class="nav-group">
-          <div class="nav-group-label">Analytics</div>
-          <a href="#reports" class="nav-link">
-            <i class="fa-solid fa-chart-column" aria-hidden="true"></i> Reports
-          </a>
-          <a href="#recent-activity" class="nav-link">
-            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Recent Activity
-          </a>
-        </div>
-
-        <!-- =====================================================
+      <!-- =====================================================
      ABHISHEK CHANGE
      Purpose:
      Show User Management only to admins
      ===================================================== -->
 
-        {% if session.get("user_role") == "admin" %}
-        <a href="/users" class="nav-link">
-          <i class="fa-solid fa-users"></i>
-          <span>Users</span>
+{% if session.get("user_role") == "admin" %}
+<a href="/users" class="nav-link">
+  <i class="fa-solid fa-users"></i>
+  <span>Users</span>
+</a>
+{% endif %}
+
+      <!-- <div class="nav-group">
+        <div class="nav-group-label">System</div>
+        <a href="#settings" class="nav-link">
+          <i class="fa-solid fa-gear" aria-hidden="true"></i> Settings
         </a>
-        {% endif %}
+      </div> -->
 
-        <div class="nav-group">
-          <div class="nav-group-label">System</div>
-          <a href="#settings" class="nav-link">
-            <i class="fa-solid fa-gear" aria-hidden="true"></i> Settings
-          </a>
-        </div>
+    </nav>
 
-      </nav>
+    <div class="sidebar-footer">
+      <div class="avatar" aria-hidden="true">A</div>
+      <div class="who">
+        <div class="name">{{ session.get('user_name', 'Admin') }}</div>
+<div class="role">{{ session.get('user_role', 'Administrator') }}</div>
+      </div>
+    </div>
 
-      <div class="sidebar-footer">
-        <div class="avatar" aria-hidden="true">A</div>
-        <div class="who">
-          <div class="name">{{ session.get('user_name', 'Admin') }}</div>
-          <div class="role">{{ session.get('user_role', 'Administrator') }}</div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- =========================================================
+       MAIN COLUMN
+       ========================================================= -->
+  <div class="main">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button type="button" class="menu-btn" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+          <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
+        <div class="page-heading">
+          <div class="breadcrumb">Society Archive</div>
+          <h1>डॉ. अम्बेडकर सहकारी कृषि सोसायटी</h1>
+          <p class="society-location">पथरिया बोधा, तहसील बीना</p>
         </div>
       </div>
 
-    </aside>
-
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- =========================================================
-       MAIN COLUMN
-       ========================================================= -->
-    <div class="main">
-
-      <header class="topbar">
-        <div class="topbar-left">
-          <button type="button" class="menu-btn" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false"
-            aria-controls="sidebar">
-            <i class="fa-solid fa-bars" aria-hidden="true"></i>
-          </button>
-          <div class="page-heading">
-            <div class="breadcrumb">Society Archive</div>
-            <h1>Document Management Dashboard</h1>
+      <div class="topbar-right">
+        <div class="admin-chip">
+          <div class="avatar" aria-hidden="true">A</div>
+          <div class="who">
+            <div class="name">{{ session.get('user_name', 'Admin') }}</div>
+<div class="role">{{ session.get('user_role', 'Administrator') }}</div>
           </div>
         </div>
 
         <div class="topbar-right">
-          <div class="admin-chip">
-            <div class="avatar" aria-hidden="true">A</div>
-            <div class="who">
-              <div class="name">{{ session.get('user_name', 'Admin') }}</div>
-              <div class="role">{{ session.get('user_role', 'Administrator') }}</div>
-            </div>
-          </div>
 
-          <div class="topbar-right">
+   
 
-            <!-- =====================================================
+    <!-- =====================================================
          ABHISHEK CHANGE
          Purpose:
          Logout button for authentication module
          ===================================================== -->
-            <a href="/logout" class="logout-btn">
-              <i class="fa-solid fa-right-from-bracket"></i>
-              Logout
-            </a>
+    <a href="/logout" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        Logout
+    </a>
 
-          </div>
-        </div>
-      </header>
+</div>
+      </div>
+    </header>
 
-      <main class="content" id="main-content">
+    <main class="content" id="main-content">
 
-        <!-- =====================================================
+      <!-- =====================================================
            DASHBOARD — TITLE + KEY STATS
            ===================================================== -->
-        <section id="dashboard" class="panel dashboard-intro" aria-labelledby="dashboard-title">
-          <h2 id="dashboard-title">
-            Welcome back, {{ session.get('user_name', 'Admin') }}
-          </h2>
-          <p>A live overview of the society's digital records — pulled directly from what's actually been uploaded and
-            scanned.</p>
-        </section>
+      <section id="dashboard" class="panel dashboard-intro" aria-labelledby="dashboard-title">
+        <h2 id="dashboard-title">
+    पुनः स्वागत है, {{ session.get('user_name', 'Admin') }}
+</h2>
+        <p>समिति के डिजिटल अभिलेखों का वास्तविक समय अवलोकन, जिसमें अपलोड और स्कैन किए गए सभी दस्तावेज़ शामिल हैं।</p>
+      </section>
 
-        <div class="stat-grid" role="list" aria-label="Key statistics">
+      <div class="stat-grid" role="list" aria-label="Key statistics">
 
-          <div class="stat-card" role="listitem">
-            <div class="stat-top">
-              <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-file-lines"></i></div>
-            </div>
-            <div class="stat-value" id="statTotalDocuments">0</div>
-            <div class="stat-label">Total Documents</div>
-            <span class="stat-delta" id="statTotalDelta" hidden>Live</span>
+        <div class="stat-card" role="listitem">
+          <div class="stat-top">
+            <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-file-lines"></i></div>
           </div>
-
-          <div class="stat-card-wrap" role="listitem">
-            <button type="button" class="stat-card is-clickable" id="statCategoriesBtn" aria-haspopup="dialog"
-              aria-controls="categoriesModal">
-              <span class="stat-top">
-                <span class="stat-icon" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></span>
-              </span>
-              <span class="stat-value" id="statCategories">0</span>
-              <span class="stat-label">Categories</span>
-              <span class="stat-delta">View breakdown</span>
-            </button>
-          </div>
-
-          <div class="stat-card" role="listitem">
-            <div class="stat-top">
-              <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-            </div>
-            <div class="stat-value" id="statNewUploads">0</div>
-            <div class="stat-label">New Uploads</div>
-            <span class="stat-delta">This week</span>
-          </div>
-
-          <div class="stat-card" role="listitem">
-            <div class="stat-top">
-              <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-box-archive"></i></div>
-            </div>
-            <div class="stat-value">50+</div>
-            <div class="stat-label">Years Archive</div>
-          </div>
-
+          <div class="stat-value" id="statTotalDocuments">0</div>
+          <div class="stat-label">Total Documents</div>
+          <span class="stat-delta" id="statTotalDelta" hidden>Live</span>
         </div>
 
-        <!-- =====================================================
+        <div class="stat-card-wrap" role="listitem">
+          <button type="button" class="stat-card is-clickable" id="statCategoriesBtn"
+                  aria-haspopup="dialog" aria-controls="categoriesModal">
+            <span class="stat-top">
+              <span class="stat-icon" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></span>
+            </span>
+            <span class="stat-value" id="statCategories">0</span>
+            <span class="stat-label">Categories</span>
+            <span class="stat-delta">View breakdown</span>
+          </button>
+        </div>
+
+        <div class="stat-card" role="listitem">
+          <div class="stat-top">
+            <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          </div>
+          <div class="stat-value" id="statNewUploads">0</div>
+          <div class="stat-label">New Uploads</div>
+          <span class="stat-delta">This week</span>
+        </div>
+
+        <div class="stat-card" role="listitem">
+          <div class="stat-top">
+            <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-box-archive"></i></div>
+          </div>
+          <div class="stat-value">50+</div>
+          <div class="stat-label">Years Archive</div>
+        </div>
+
+      </div>
+
+      <!-- =====================================================
            DOCUMENT SEARCH + TABLE
            ===================================================== -->
-        <section id="documents" class="panel" aria-labelledby="documents-title">
-          <div class="section-title">
-            <h2 id="documents-title"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Document Search
-            </h2>
+      <section id="documents" class="panel" aria-labelledby="documents-title">
+
+        <div class="section-title">
+          <h2 id="documents-title"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Document Search</h2>
+        </div>
+
+        <form class="filters" role="search" aria-label="Search documents" id="searchForm">
+
+          <div class="field">
+            <label for="doc-search">Document name</label>
+            <input type="text" id="doc-search" name="q" placeholder="Search document name">
           </div>
 
-          <form class="filters" role="search" aria-label="Search documents" id="searchForm">
-
-            <div class="field">
-              <label for="doc-search">Document name</label>
-              <input type="text" id="doc-search" name="q" placeholder="Search document name">
-            </div>
-
-            <div class="field">
-              <label for="doc-category">Category</label>
-              <select id="doc-category" name="category">
-                <option value="">All Categories</option>
-                {% for name in categories.keys() %}
-                <option value="{{ name }}">{{ name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="field">
-              <label for="doc-date">Date</label>
-              <input type="date" id="doc-date" name="date">
-            </div>
-
-            <button type="submit" class="btn">
-              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Search</button>
-
-          </form>
-
-          <p class="scanner-status" id="searchResultInfo" aria-live="polite"></p>
-          <!-- =====================================================
-     Modify : Sakshi Changes
-     issue: Table was rendending after the recent search
-     Purpose:To Show table Right After the the Document search and before categories
-     ===================================================== -->
-
-          <!-- Desktop / tablet table -->
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" id="selectAllDocs">
-                  </th>
-                  <th>Document</th>
-                  <th>Category</th>
-                  <th>Uploaded By</th>
-                  <th>Date & Time</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="documentsTableBody">
-                <tr class="state-row">
-                  <td colspan="7">Loading documents…</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="field">
+            <label for="doc-category">Category</label>
+            <select id="doc-category" name="category">
+              <option value="">All Categories</option>
+              {% for name in categories.keys() %}
+              <option value="{{ name }}">{{ name }}</option>
+              {% endfor %}
+            </select>
           </div>
 
-          <!-- Mobile card equivalent (same data, no horizontal scroll) -->
-          <div class="doc-cards" id="documentsCardList">
-            <p class="list-empty">Loading documents…</p>
+          <div class="field">
+            <label for="doc-date">Date</label>
+            <input type="date" id="doc-date" name="date">
           </div>
-        </section>
 
-        <!-- =====================================================
+          <button type="submit" class="btn">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Search
+          </button>
+
+        </form>
+
+        <p class="scanner-status" id="searchResultInfo" aria-live="polite"></p>
+
+        <!-- Desktop / tablet table -->
+         
+       
+
+      </section>
+
+      <!-- =====================================================
            CATEGORIES
            ===================================================== -->
-        <section id="categories" class="panel" aria-labelledby="categories-title">
+      <section id="categories" class="panel" aria-labelledby="categories-title">
 
-          <div class="section-title">
-            <h2 id="categories-title"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> Document Categories
-            </h2>
-            <span class="section-desc">Select a category to view its documents</span>
-          </div>
+        <div class="section-title">
 
-          <div class="category-browse-grid">
-            {% for name in categories.keys() %}
-            <a href="/category/{{ name | urlencode }}"
-              class="category-card {{ 'is-current' if selected_category == name }}">
-              <div class="cat-icon" aria-hidden="true"><i class="fa-solid {{ category_icons[name] }}"></i></div>
-              <div class="cat-title">{{ name }}</div>
-            </a>
-            {% endfor %}
-          </div>
+  <div>
+    <h2 id="categories-title">
+      <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+      Document Categories
+    </h2>
 
-          {% if selected_category %}
-          <div class="category-detail">
-            <div class="breadcrumb">Categories / {{ selected_category }}</div>
-            <h2>{{ selected_category }} Documents</h2>
+    <span class="section-desc">
+      Select a category to view its documents
+    </span>
+  </div>
 
-            {% if category_files %}
+  <button
+      type="button"
+      class="btn"
+      id="addCategoryBtn">
+
+      <i class="fa-solid fa-plus"></i>
+      Add Category
+
+  </button>
+
+</div>
+
+        <div class="category-browse-grid">
+          {% for name in categories.keys() %}
+          <!-- category-modal-trigger class added by gaurav on 28/08/2026 -->
+          <a href="javascript:void(0)"
+   class="category-card category-modal-trigger"
+   data-category="{{ name }}">
+            <div class="cat-icon" aria-hidden="true"><i class="fa-solid {{ category_icons[name] }}"></i></div>
+            <div class="cat-title">{{ name }}</div>
+            {% if name not in [
+    'Audit',
+    'Revenue',
+    'Court Matter',
+    'Membership Details',
+    'Police Department',
+    'Dispute',
+    'Committee Proceedings',
+    'Samiti Records',
+    'Others',
+    'Official Letters'
+] %}
+<button
+    class="btn btn-outline delete-category-btn"
+    data-category="{{ name }}">
+    Delete
+</button>
+{% endif %}
+</a>
+          {% endfor %}
+        </div>
+       
+
+        {% if selected_category %}
+        <div class="category-detail">
+          <div class="breadcrumb">Categories / {{ selected_category }}</div>
+          <h2>{{ selected_category }} Documents</h2>
+
+          {% if category_files %}
             <div style="margin-top: var(--sp-4);">
-              {% for file in category_files %}
+            {% for file in category_files %}
               <div class="file-row">
                 <div class="file-name">
                   <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
@@ -328,343 +340,533 @@
                   <i class="fa-regular fa-eye" aria-hidden="true"></i> View
                 </button>
               </div>
-              {% endfor %}
+            {% endfor %}
             </div>
-            {% else %}
+          {% else %}
             <div class="empty-state">
               <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
               <p>No documents uploaded in this category yet.</p>
             </div>
-            {% endif %}
-          </div>
           {% endif %}
+        </div>
+        {% endif %}
 
-        </section>
+      </section>
 
-        <!-- =====================================================
+      <!-- =====================================================
            UPLOAD
            ===================================================== -->
-        <section id="upload-records" class="panel" aria-labelledby="upload-title">
+      <section id="upload-records" class="panel" aria-labelledby="upload-title">
 
-          <div class="section-title">
-            <h2 id="upload-title"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload New Document</h2>
+        <div class="section-title">
+          <h2 id="upload-title"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload New Document</h2>
+        </div>
+
+        <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon" aria-hidden="true"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+            <h3>Drag &amp; drop files here</h3>
+            <p class="formats">Supported formats: PDF, JPG, PNG, DOCX, XLSX</p>
+
+            <label class="file-input-label">
+              <span class="btn btn-outline">
+                <i class="fa-regular fa-folder-open" aria-hidden="true"></i> Browse Files
+              </span>
+              <input class="file-input-real" type="file" name="file" id="file" multiple required>
+            </label>
+
+            <ul class="file-list" id="fileList" aria-live="polite"></ul>
           </div>
 
-          <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+          <div>
 
-            <div class="dropzone" id="dropzone">
-              <div class="dropzone-icon" aria-hidden="true"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
-              <h3>Drag &amp; drop files here</h3>
-              <p class="formats">Supported formats: PDF, JPG, PNG, DOCX, XLSX</p>
+          <div class="field">
 
-              <label class="file-input-label">
-                <span class="btn btn-outline">
-                  <i class="fa-regular fa-folder-open" aria-hidden="true"></i> Browse Files
-                </span>
-                <input class="file-input-real" type="file" name="file" id="file" multiple required>
+    <label for="document-date">
+        Document Date
+    </label>
+
+    <input
+        type="date"
+        id="document-date"
+        name="document_date"
+        required
+    >
+
+</div>
+            <h3 class="upload-subhead">Select Document Category</h3>
+
+            <div class="category-grid">
+              {% for name in categories.keys() %}
+              <label class="category-option">
+                <input type="radio" name="category" value="{{ name }}" {{ 'required' if loop.first }}>
+                <span class="cat-icon" aria-hidden="true"><i class="fa-solid {{ category_icons[name] }}"></i></span>
+                <span class="cat-name">{{ name }}</span>
+                <span class="checkmark" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
               </label>
-
-              <ul class="file-list" id="fileList" aria-live="polite"></ul>
+              {% endfor %}
             </div>
+          </div>
 
-            <div>
-              <h3 class="upload-subhead">Select Document Category</h3>
+          <button type="submit" class="btn btn-gold" id="uploadSubmitBtn">
+            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload Documents
+          </button>
 
-              <div class="category-grid">
-                {% for name in categories.keys() %}
-                <label class="category-option">
-                  <input type="radio" name="category" value="{{ name }}" {{ 'required' if loop.first }}>
-                  <span class="cat-icon" aria-hidden="true"><i class="fa-solid {{ category_icons[name] }}"></i></span>
-                  <span class="cat-name">{{ name }}</span>
-                  <span class="checkmark" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-                </label>
-                {% endfor %}
-              </div>
-            </div>
+        </form>
 
-            <button type="submit" class="btn btn-gold" id="uploadSubmitBtn">
-              <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload Documents
-            </button>
+      </section>
 
-          </form>
-
-        </section>
-
-        <!-- =====================================================
+      <!-- =====================================================
            SCANNER
            ===================================================== -->
-        <section id="scanner" class="panel" aria-labelledby="scanner-title">
+      <section id="scanner" class="panel" aria-labelledby="scanner-title">
 
-          <div class="section-title">
-            <h2 id="scanner-title"><i class="fa-solid fa-print" aria-hidden="true"></i> Document Scanner</h2>
+        <div class="section-title">
+          <h2 id="scanner-title"><i class="fa-solid fa-print" aria-hidden="true"></i> Document Scanner</h2>
+        </div>
+
+        <div class="scanner-grid">
+
+          <div class="scanner-preview" id="scannerPreview">
+            <i class="fa-regular fa-image" aria-hidden="true"></i>
+            <strong>Scanner Preview Area</strong>
+            <span>Choose an image below to see it here</span>
           </div>
 
-          <div class="scanner-grid">
+          <div class="control-panel">
 
-            <div class="scanner-preview" id="scannerPreview">
-              <i class="fa-regular fa-image" aria-hidden="true"></i>
-              <strong>Scanner Preview Area</strong>
-              <span>Choose an image below to see it here</span>
+            <div class="field">
+              <label for="scan-file">Select physical document image</label>
+              <input type="file" id="scan-file" name="scan-file" accept="image/*">
             </div>
 
-            <div class="control-panel">
+            <div class="field">
+              <label for="scan-category">Save to category</label>
+              <select id="scan-category" name="scan-category">
+                {% for name in categories.keys() %}
+                <option value="{{ name }}">{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
-              <div class="field">
-                <label for="scan-file">Select physical document image</label>
-                <input type="file" id="scan-file" name="scan-file" accept="image/*">
+            <div class="range-row">
+              <div class="range-label">
+                <label for="brightness">Brightness</label>
+                <span class="range-value">50%</span>
               </div>
+              <input class="range" type="range" id="brightness" min="0" max="100" value="50">
+            </div>
 
-              <div class="field">
-                <label for="scan-category">Save to category</label>
-                <select id="scan-category" name="scan-category">
-                  {% for name in categories.keys() %}
-                  <option value="{{ name }}">{{ name }}</option>
-                  {% endfor %}
-                </select>
+            <div class="range-row">
+              <div class="range-label">
+                <label for="contrast">Contrast</label>
+                <span class="range-value">50%</span>
               </div>
+              <input class="range" type="range" id="contrast" min="0" max="100" value="50">
+            </div>
 
-              <div class="range-row">
-                <div class="range-label">
-                  <label for="brightness">Brightness</label>
-                  <span class="range-value">50%</span>
-                </div>
-                <input class="range" type="range" id="brightness" min="0" max="100" value="50">
+            <div class="range-row">
+              <div class="range-label">
+                <label for="sharpness">Sharpness</label>
+                <span class="range-value">60%</span>
               </div>
+              <input class="range" type="range" id="sharpness" min="0" max="100" value="60">
+            </div>
 
-              <div class="range-row">
-                <div class="range-label">
-                  <label for="contrast">Contrast</label>
-                  <span class="range-value">50%</span>
-                </div>
-                <input class="range" type="range" id="contrast" min="0" max="100" value="50">
-              </div>
+            <div class="field">
+              <label for="output-format">Output format</label>
+              <select id="output-format" name="output-format">
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </div>
 
-              <div class="range-row">
-                <div class="range-label">
-                  <label for="sharpness">Sharpness</label>
-                  <span class="range-value">60%</span>
-                </div>
-                <input class="range" type="range" id="sharpness" min="0" max="100" value="60">
-              </div>
+            <p class="scanner-status" id="scannerStatus">Select an image to begin.</p>
 
-              <div class="field">
-                <label for="output-format">Output format</label>
-                <select id="output-format" name="output-format">
-                  <option value="png">PNG</option>
-                  <option value="jpg">JPG</option>
-                  <option value="pdf">PDF</option>
-                </select>
-              </div>
-
-              <p class="scanner-status" id="scannerStatus">Select an image to begin.</p>
-
-              <div class="control-actions">
-                <button type="button" class="btn" id="scanGenerateBtn" disabled>
-                  <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Scan &amp; Generate
-                </button>
-                <button type="button" class="btn btn-outline" id="scanSaveBtn" disabled>
-                  <i class="fa-regular fa-floppy-disk" aria-hidden="true"></i> Save to Archive
-                </button>
-              </div>
-
+            <div class="control-actions">
+              <button type="button" class="btn" id="scanGenerateBtn" disabled>
+                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Scan &amp; Generate
+              </button>
+              <button type="button" class="btn btn-outline" id="scanSaveBtn" disabled>
+                <i class="fa-regular fa-floppy-disk" aria-hidden="true"></i> Save to Archive
+              </button>
             </div>
 
           </div>
 
-        </section>
+        </div>
 
-        <!-- =====================================================
+      </section>
+
+      <!-- =====================================================
      ABHISHEK CHANGE
      Purpose:
      Reports dashboard with live statistics
      ===================================================== -->
-        <section id="reports" class="panel" aria-labelledby="reports-title">
-
-          <div class="section-title">
-            <h2 id="reports-title">
-              <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
-              Reports
-            </h2>
-          </div>
-
-          <!-- =====================================================
-       ABHISHEK CHANGE
-       Purpose:
-       Display live report statistics
-       ===================================================== -->
-
-          <div class="stats-grid" id="reportsStats">
-
-            <div class="stat-card">
-              <div class="stat-label">Total Documents</div>
-              <div class="stat-value" id="reportTotalDocuments">0</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-label">Total Users</div>
-              <div class="stat-value" id="reportTotalUsers">0</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-label">Scanned Documents</div>
-              <div class="stat-value" id="reportScannedDocuments">0</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-label">Uploaded Documents</div>
-              <div class="stat-value" id="reportUploadedDocuments">0</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-label">New Uploads</div>
-              <div class="stat-value" id="reportNewUploads">0</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-label">Categories</div>
-              <div class="stat-value" id="reportCategories">0</div>
-            </div>
-
-          </div>
-
-        </section>
-        <!-- =====================================================
+     
+      <!-- =====================================================
            RECENT ACTIVITY
            ===================================================== -->
-        <section id="recent-activity" class="panel" aria-labelledby="activity-title">
+      <section id="recent-activity" class="panel" aria-labelledby="activity-title">
 
-          <div class="section-title">
-            <h2 id="activity-title"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Recent Activity
-            </h2>
-          </div>
+    <div class="section-title">
+        <h2 id="activity-title">
+            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+            Recent Activity
+        </h2>
+    </div>
 
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">User</th>
-                  <th scope="col">Activity</th>
-                  <th scope="col">Date</th>
-                </tr>
-              </thead>
-              <tbody id="activityTableBody">
-                <tr class="state-row">
-                  <td colspan="3">Loading activity…</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    <button type="button" class="btn btn-outline" id="openActivityModal">
+        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+        View Recent Activity
+    </button>
 
-          <!-- Mobile timeline equivalent -->
-          <div class="doc-cards" id="activityCardList">
-            <p class="list-empty">Loading activity…</p>
-          </div>
+    <!-- Hidden containers required by existing JS -->
+    <div style="display:none;">
+        <table>
+            <tbody id="activityTableBody"></tbody>
+        </table>
 
-        </section>
+        <div id="activityCardList"></div>
+    </div>
 
-        <!-- =====================================================
+</section>
+
+<!-- =====================================================
+     RECENT ACTIVITY POPUP
+     ===================================================== -->
+
+<div class="modal-overlay" id="activityModal">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <h3>
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Recent Activity
+            </h3>
+
+            <button
+                type="button"
+                class="modal-close-btn"
+                id="closeActivityModal"
+                aria-label="Close"
+            >
+                &times;
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div id="activityModalList">
+
+                <p class="list-empty">
+                    Loading activity...
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+      <!-- =====================================================
            ARCHIVE OVERVIEW
            ===================================================== -->
-        <section class="panel" aria-labelledby="archive-title">
+      <section class="panel" aria-labelledby="archive-title">
 
-          <div class="section-title">
-            <h2 id="archive-title"><i class="fa-solid fa-box-archive" aria-hidden="true"></i> Archive Overview</h2>
-          </div>
+        <div class="section-title">
+          <h2 id="archive-title"><i class="fa-solid fa-box-archive" aria-hidden="true"></i> Archive Overview</h2>
+        </div>
 
-          <div class="stat-grid" role="list" aria-label="Archive overview">
+        <div class="stat-grid" role="list" aria-label="Archive overview">
 
-            <div class="stat-card" role="listitem">
-              <div class="stat-top">
-                <div class="stat-icon" aria-hidden="true"><i class="fa-regular fa-calendar"></i></div>
-              </div>
-              <div class="stat-value">1970</div>
-              <div class="stat-label">Earliest Available Record</div>
-            </div>
+         <button
+    type="button"
+    class="stat-card archiveOverviewBtn"
+    data-archive-type="historical"
+    id="archiveOverviewBtn">
 
-            <div class="stat-card" role="listitem">
-              <div class="stat-top">
-                <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div>
-              </div>
-              <div class="stat-value">2026</div>
-              <div class="stat-label">Latest Digital Record</div>
-            </div>
+    <div class="stat-top">
+        <div class="stat-icon" aria-hidden="true">
+            <i class="fa-regular fa-calendar"></i>
+        </div>
+    </div>
 
-            <div class="stat-card" role="listitem">
-              <div class="stat-top">
-                <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-database"></i></div>
-              </div>
-              <div class="stat-value">35 GB</div>
-              <div class="stat-label">Total Storage Used</div>
-            </div>
+    <div class="stat-value">
+        1970
+    </div>
 
-            <div class="stat-card" role="listitem">
-              <div class="stat-top">
-                <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-heart-pulse"></i></div>
-              </div>
-              <div class="stat-value">99%</div>
-              <div class="stat-label">Archive Health</div>
-            </div>
+    <div class="stat-label">
+        Earliest Available Record
+    </div>
 
-          </div>
+</button>
+<button
+    type="button"
+    class="stat-card archiveOverviewBtn"
+    data-archive-type="latest">
 
-        </section>
 
-        <!-- =====================================================
+    <div class="stat-top">
+        ...
+    </div>
+
+    <div class="stat-value">2026</div>
+
+    <div class="stat-label">
+        Latest Digital Record
+    </div>
+
+</button>
+
+         <button
+    type="button"
+    class="stat-card archiveOverviewBtn"
+    data-archive-type="all">
+
+    <div class="stat-top">
+        ...
+    </div>
+
+    <div class="stat-value">2GB</div>
+
+    <div class="stat-label">
+        Total Storage Used
+    </div>
+
+</button>
+
+ <button
+    type="button"
+    class="stat-card archiveOverviewBtn"
+    data-archive-type="health">
+
+    <div class="stat-top">
+        ...
+    </div>
+
+    <div class="stat-value">99%</div>
+
+    <div class="stat-label">
+        Archive Health
+    </div>
+
+</button>
+          
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
            SETTINGS (placeholder — no settings persistence yet)
            ===================================================== -->
-        <section id="settings" class="panel" aria-labelledby="settings-title">
-          <div class="section-title">
-            <h2 id="settings-title"><i class="fa-solid fa-gear" aria-hidden="true"></i> Settings</h2>
-          </div>
-          <div class="placeholder-panel">
-            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
-            <h3>No configurable settings yet</h3>
-            <p>Account and system preferences will live here once they're implemented.</p>
-          </div>
-        </section>
+      
 
-        <footer class="app-footer">
-          <p>&copy; 2026 Dr. Ambedkar Krishi Sahakari Society</p>
-          <p>Document Management &amp; Digital Archive System</p>
-        </footer>
+      <footer class="app-footer">
+        <p>&copy; 2026 Dr. Ambedkar Krishi Sahakari Society</p>
+        <p>Document Management &amp; Digital Archive System</p>
+      </footer>
 
-      </main>
-    </div>
+    </main>
   </div>
+</div>
 
-  <!-- =========================================================
+<!-- =========================================================
      CATEGORIES BREAKDOWN MODAL
      ========================================================= -->
-  <div class="modal-overlay" id="categoriesModal" role="dialog" aria-modal="true"
-    aria-labelledby="categoriesModalTitle">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="categoriesModalTitle">Documents by Category</h3>
-        <button type="button" class="modal-close" id="categoriesModalClose" aria-label="Close">
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class="modal-body" id="categoriesModalBody">
-        <p class="list-empty">Loading…</p>
-      </div>
+<div class="modal-overlay" id="categoriesModal" role="dialog" aria-modal="true" aria-labelledby="categoriesModalTitle">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="categoriesModalTitle">Documents by Category</h3>
+      <button type="button" class="modal-close" id="categoriesModalClose" aria-label="Close">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="modal-body" id="categoriesModalBody">
+      <p class="list-empty">Loading…</p>
     </div>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-    integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</div>
+<!-- =========================================================
+     CATEGORY DOCUMENTS MODAL
+     ========================================================= -->
 
-  <!-- =====================================================
+<div
+    class="modal-overlay"
+    id="categoryDocumentsModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="categoryDocumentsTitle"
+>
+
+    <div class="modal-card" style="max-width:1000px;">
+
+        <div class="modal-header">
+
+            <h3 id="categoryDocumentsTitle">
+                Category Documents
+            </h3>
+
+            <button
+                type="button"
+                class="modal-close"
+                id="categoryDocumentsClose"
+                aria-label="Close"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+        <div
+            class="modal-body"
+            id="categoryDocumentsBody"
+        >
+
+            <p class="list-empty">
+                Loading documents...
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div
+    class="modal-overlay"
+    id="archiveModal"
+    role="dialog"
+    aria-modal="true">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <h3>
+                Archive Documents
+            </h3>
+
+            <button
+                type="button"
+                class="modal-close"
+                id="archiveModalClose">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <input
+                type="text"
+                id="archiveSearch"
+                placeholder="Search archived documents">
+
+            <br><br>
+
+            <div id="archiveDocumentsBody">
+
+                <p class="list-empty">
+                    No archive records loaded.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================================================
+     ADD CATEGORY MODAL
+     ========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="addCategoryModal"
+    role="dialog"
+    aria-modal="true"
+>
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <h3>
+                Add Category
+            </h3>
+
+            <button
+                type="button"
+                class="modal-close"
+                id="addCategoryClose"
+                aria-label="Close"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div class="field">
+
+                <label>
+                    Category Name
+                </label>
+
+                <input
+                    type="text"
+                    id="newCategoryName"
+                    placeholder="Enter category name"
+                >
+
+            </div>
+
+            <br>
+
+            <button
+                type="button"
+                class="btn"
+                id="saveCategoryBtn"
+            >
+                Save Category
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- =====================================================
      ABHISHEK CHANGE
      Purpose:
      Make logged-in user role available to JavaScript
      ===================================================== -->
 
-  <script>
-    const USER_ROLE = "{{ session.get('user_role', 'user') }}";
-  </script>
+<script>
+const USER_ROLE = "{{ session.get('user_role', 'user') }}";
+</script>
 
-  <script src="../static/js/script.js"></script>
+<script src="../static/js/script.js"></script>
 
 </body>
-
 </html>
