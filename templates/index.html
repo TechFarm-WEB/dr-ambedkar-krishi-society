@@ -101,12 +101,12 @@
      ISSUE ID    : ENHANCEMENT-0006-WEBTEST
      MODIFIED BY : Gaurav Choudhary
      TASK        : Primary Admin User Management Access
-     PURPOSE     : Display User Management only to the
-                   designated primary administrator.
+     PURPOSE     : Display the Users navigation option only
+                   for the designated primary administrator.
      ===================================================== -->
 {% if session.get("user_email", "")|lower == "sunil@neudocl.com" %}
-/users
-  <i class="fa-solid fa-users"></i>
+  <a href="/users" class="nav-link">
+  <i class="fa-solid fa-users" aria-hidden="true"></i>
   <span>Users</span>
 </a>
 {% endif %}
