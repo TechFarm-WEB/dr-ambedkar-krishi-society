@@ -1,0 +1,11 @@
+{
+  "note": "Dummy/extracted visual assets cropped from the supplied screenshots. They preserve the visual look of the screenshots; text/UI is not included unless part of the crop.",
+  "folders": {
+    "branding": "Header/hero/logo-style assets and page header crops",
+    "founders": "8 founder-member portrait crops",
+    "presidents": "Current president + 5 former-president portrait crops",
+    "gallery": "22 gallery photo crops",
+    "members": "40 current-member portrait crops",
+    "contact": "Location/map crop"
+  }
+}
