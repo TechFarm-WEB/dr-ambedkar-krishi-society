@@ -112,40 +112,119 @@ document.addEventListener("DOMContentLoaded", function () {
      ------------------------------------------------------------- */
   var toastStack = document.getElementById("toastStack");
 
-  function showToast(message, isError) {
-    if (!toastStack) return;
-    var toast = document.createElement("div");
-    toast.className = "toast" + (isError ? " is-error" : "");
-    toast.setAttribute("role", "status");
+  // function showToast(message, isError) {
+  //   if (!toastStack) return;
+  //   var toast = document.createElement("div");
+  //   toast.className = "toast" + (isError ? " is-error" : "");
+  //   toast.setAttribute("role", "status");
 
-    var icon = document.createElement("i");
-    icon.className = isError
-      ? "fa-solid fa-circle-exclamation"
-      : "fa-solid fa-circle-check";
-    icon.setAttribute("aria-hidden", "true");
+  //   var icon = document.createElement("i");
+  //   icon.className = isError
+  //     ? "fa-solid fa-circle-exclamation"
+  //     : "fa-solid fa-circle-check";
+  //   icon.setAttribute("aria-hidden", "true");
 
-    var text = document.createElement("span");
-    text.textContent = message;
+  //   var text = document.createElement("span");
+  //   text.textContent = message;
 
-    var closeBtnEl = document.createElement("button");
-    closeBtnEl.type = "button";
-    closeBtnEl.className = "toast-close";
-    closeBtnEl.setAttribute("aria-label", "Dismiss notification");
-    closeBtnEl.innerHTML =
-      '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
-    closeBtnEl.addEventListener("click", function () {
+  //   var closeBtnEl = document.createElement("button");
+  //   closeBtnEl.type = "button";
+  //   closeBtnEl.className = "toast-close";
+  //   closeBtnEl.setAttribute("aria-label", "Dismiss notification");
+  //   closeBtnEl.innerHTML =
+  //     '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+  //   closeBtnEl.addEventListener("click", function () {
+  //     toast.remove();
+  //   });
+
+  //   toast.appendChild(icon);
+  //   toast.appendChild(text);
+  //   toast.appendChild(closeBtnEl);
+  //   toastStack.appendChild(toast);
+
+  //   setTimeout(function () {
+  //     toast.remove();
+  //   }, 6000);
+  // }
+  /* =====================================================
+   ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+   MODIFIED BY : Gaurav Choudhary
+   TASK        : Improve Upload Document Notification
+   PURPOSE     : Display clear success and error messages
+                 based on the actual upload result.
+   ===================================================== */
+function showToast(message, isError) {
+  if (!toastStack) return;
+
+  var toast = document.createElement("div");
+
+  toast.className =
+    "toast" + (isError ? " is-error" : " is-success");
+
+  toast.setAttribute(
+    "role",
+    isError ? "alert" : "status"
+  );
+
+  var icon = document.createElement("i");
+
+  icon.className = isError
+    ? "fa-solid fa-circle-exclamation"
+    : "fa-solid fa-circle-check";
+
+  icon.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  var content = document.createElement("div");
+  content.className = "toast-content";
+
+  var title = document.createElement("strong");
+  title.className = "toast-title";
+
+  title.textContent = isError
+    ? "Upload Failed"
+    : "Upload Successful";
+
+  var text = document.createElement("span");
+  text.className = "toast-message";
+  text.textContent = message;
+
+  var closeBtnEl =
+    document.createElement("button");
+
+  closeBtnEl.type = "button";
+  closeBtnEl.className = "toast-close";
+
+  closeBtnEl.setAttribute(
+    "aria-label",
+    "Dismiss notification"
+  );
+
+  closeBtnEl.innerHTML =
+    '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+
+  closeBtnEl.addEventListener(
+    "click",
+    function () {
       toast.remove();
-    });
+    }
+  );
 
-    toast.appendChild(icon);
-    toast.appendChild(text);
-    toast.appendChild(closeBtnEl);
-    toastStack.appendChild(toast);
+  content.appendChild(title);
+  content.appendChild(text);
 
-    setTimeout(function () {
-      toast.remove();
-    }, 6000);
-  }
+  toast.appendChild(icon);
+  toast.appendChild(content);
+  toast.appendChild(closeBtnEl);
+
+  toastStack.appendChild(toast);
+
+  setTimeout(function () {
+    toast.remove();
+  }, 6000);
+}
 
   /* -------------------------------------------------------------
      SMALL HELPERS
@@ -818,6 +897,21 @@ if (activityModalList) {
       });
   }
 
+  /* =====================================================
+   ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+   MODIFIED BY : Gaurav Choudhary
+   TASK        : Recent Activity - Auto Refresh
+   PURPOSE     : Fetch the latest activity whenever the
+                 View Recent Activity button is clicked.
+   ===================================================== */
+var openActivityModal = document.getElementById("openActivityModal");
+
+if (openActivityModal) {
+  openActivityModal.addEventListener("click", function () {
+    refreshActivity();
+  });
+}
+
   /* -------------------------------------------------------------
      GLOBAL REFRESH — after any successful upload or scan save
      ------------------------------------------------------------- */
@@ -878,50 +972,170 @@ if (activityModalList) {
     });
   }
 
-  if (uploadForm) {
-    uploadForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+  // if (uploadForm) {
+  //   uploadForm.addEventListener("submit", function (e) {
+  //     e.preventDefault();
 
-      var formData = new FormData(uploadForm);
-      uploadSubmitBtn.disabled = true;
-      uploadSubmitBtn.textContent = "Uploading…";
+  //     var formData = new FormData(uploadForm);
+  //     uploadSubmitBtn.disabled = true;
+  //     uploadSubmitBtn.textContent = "Uploading…";
 
-      fetch("/upload", {
-        method: "POST",
-        body: formData,
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      })
-        .then(function (res) {
-          return res.json().then(function (data) {
-            return { ok: res.ok, data: data };
-          });
-        })
-        .then(function (result) {
-          if (result.ok && result.data.success) {
-            showToast(result.data.message, false);
-            uploadForm.reset();
-            renderFileList([]);
-            // refreshEverything();
-          } else {
-            showToast(
-              result.data.message || "Upload failed. Please try again.",
-              true,
-            );
-          }
-        })
-        .catch(function () {
-          showToast(
-            "Upload failed. Please check your connection and try again.",
-            true,
-          );
-        })
-        .finally(function () {
-          uploadSubmitBtn.disabled = false;
-          uploadSubmitBtn.innerHTML =
-            '<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload Documents';
-        });
+  //     fetch("/upload", {
+  //       method: "POST",
+  //       body: formData,
+  //       headers: { "X-Requested-With": "XMLHttpRequest" },
+  //     })
+  //       .then(function (res) {
+  //         return res.json().then(function (data) {
+  //           return { ok: res.ok, data: data };
+  //         });
+  //       })
+  //       .then(function (result) {
+  //         if (result.ok && result.data.success) {
+  //           showToast(result.data.message, false);
+  //           uploadForm.reset();
+  //           renderFileList([]);
+  //           // refreshEverything();
+  //         } else {
+  //           showToast(
+  //             result.data.message || "Upload failed. Please try again.",
+  //             true,
+  //           );
+  //         }
+  //       })
+  //       .catch(function () {
+  //         showToast(
+  //           "Upload failed. Please check your connection and try again.",
+  //           true,
+  //         );
+  //       })
+  //       .finally(function () {
+  //         uploadSubmitBtn.disabled = false;
+  //         uploadSubmitBtn.innerHTML =
+  //           '<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload Documents';
+  //       });
+  //   });
+  // }
+
+  /* =====================================================
+   ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+   MODIFIED BY : Gaurav Choudhary
+   TASK        : Improve Document Upload Speed & Feedback
+   PURPOSE     : Provide real-time upload progress and
+                 clear upload status while preserving the
+                 existing backend document processing.
+   ===================================================== */
+if (uploadForm) {
+
+  uploadForm.addEventListener("submit", function (e) {
+
+    e.preventDefault();
+
+    var formData = new FormData(uploadForm);
+
+    uploadSubmitBtn.disabled = true;
+    uploadSubmitBtn.textContent = "Uploading... 0%";
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener("progress", function (event) {
+
+      if (event.lengthComputable) {
+
+        var percentComplete = Math.round(
+          (event.loaded / event.total) * 100
+        );
+
+        uploadSubmitBtn.textContent =
+          "Uploading... " + percentComplete + "%";
+      }
+
     });
-  }
+
+    xhr.upload.addEventListener("load", function () {
+
+      uploadSubmitBtn.textContent =
+        "Processing document...";
+
+    });
+
+    xhr.addEventListener("load", function () {
+
+      try {
+
+        var data = JSON.parse(xhr.responseText);
+
+        if (
+          xhr.status >= 200 &&
+          xhr.status < 300 &&
+          data.success
+        ) {
+
+          showToast(
+            data.message,
+            false
+          );
+
+          uploadForm.reset();
+
+          renderFileList([]);
+
+        } else {
+
+          showToast(
+            data.message ||
+            "Upload failed. Please try again.",
+            true
+          );
+
+        }
+
+      } catch (error) {
+
+        showToast(
+          "Upload completed but the server response was invalid.",
+          true
+        );
+
+      }
+
+      uploadSubmitBtn.disabled = false;
+
+      uploadSubmitBtn.innerHTML =
+        '<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload Documents';
+
+    });
+
+    xhr.addEventListener("error", function () {
+
+      showToast(
+        "Upload failed. Please check your connection and try again.",
+        true
+      );
+
+      uploadSubmitBtn.disabled = false;
+
+      uploadSubmitBtn.innerHTML =
+        '<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Upload Documents';
+
+    });
+
+    xhr.open(
+      "POST",
+      "/upload",
+      true
+    );
+
+    xhr.setRequestHeader(
+      "X-Requested-With",
+      "XMLHttpRequest"
+    );
+
+    xhr.send(formData);
+
+  });
+
+}
 
   /* -------------------------------------------------------------
      SCANNER — LIVE CANVAS PREVIEW + REAL FILTERING + SAVE
@@ -1111,62 +1325,212 @@ if (activityModalList) {
     });
   }
 
-  if (scanSaveBtn) {
-    scanSaveBtn.addEventListener("click", function () {
-      if (!scanGenerated || !scannerCanvas) return;
+  // if (scanSaveBtn) {
+  //   scanSaveBtn.addEventListener("click", function () {
+  //     if (!scanGenerated || !scannerCanvas) return;
 
-      var format = outputFormatSelect.value;
-      var category = scanCategorySelect.value;
+  //     var format = outputFormatSelect.value;
+  //     var category = scanCategorySelect.value;
 
-      scanSaveBtn.disabled = true;
-      scanSaveBtn.textContent = "Saving…";
+  //     scanSaveBtn.disabled = true;
+  //     scanSaveBtn.textContent = "Saving…";
 
-      canvasToBlob(format)
-        .then(function (blob) {
-          var ext = format === "jpg" ? "jpg" : format === "pdf" ? "pdf" : "png";
-          var filename = "scan_" + Date.now() + "." + ext;
+  //     canvasToBlob(format)
+  //       .then(function (blob) {
+  //         var ext = format === "jpg" ? "jpg" : format === "pdf" ? "pdf" : "png";
+  //         var filename = "scan_" + Date.now() + "." + ext;
 
-          var formData = new FormData();
-          formData.append("file", blob, filename);
-          formData.append("category", category);
+  //         var formData = new FormData();
+  //         formData.append("file", blob, filename);
+  //         formData.append("category", category);
 
-          return fetch("/scan", { method: "POST", body: formData }).then(
-            function (res) {
-              return res.json().then(function (data) {
-                return { ok: res.ok, data: data };
-              });
-            },
-          );
-        })
-        .then(function (result) {
-          if (result.ok && result.data.success) {
-            showToast(result.data.message, false);
-            scannerStatus.textContent =
-              "Saved. Select a new image to scan another document.";
-            sourceImage = null;
-            scanGenerated = false;
-            scannerPreview.classList.remove("has-image");
-            scannerPreview.innerHTML =
-              '<i class="fa-regular fa-image" aria-hidden="true"></i>' +
-              "<strong>Scanner Preview Area</strong>" +
-              "<span>Choose an image below to see it here</span>";
-            scanFileInput.value = "";
-            scanGenerateBtn.disabled = true;
-            refreshEverything();
-          } else {
-            showToast(result.data.message || "Could not save the scan.", true);
+  //         return fetch("/scan", { method: "POST", body: formData }).then(
+  //           function (res) {
+  //             return res.json().then(function (data) {
+  //               return { ok: res.ok, data: data };
+  //             });
+  //           },
+  //         );
+  //       })
+  //       .then(function (result) {
+  //         if (result.ok && result.data.success) {
+  //           showToast(result.data.message, false);
+  //           scannerStatus.textContent =
+  //             "Saved. Select a new image to scan another document.";
+  //           sourceImage = null;
+  //           scanGenerated = false;
+  //           scannerPreview.classList.remove("has-image");
+  //           scannerPreview.innerHTML =
+  //             '<i class="fa-regular fa-image" aria-hidden="true"></i>' +
+  //             "<strong>Scanner Preview Area</strong>" +
+  //             "<span>Choose an image below to see it here</span>";
+  //           scanFileInput.value = "";
+  //           scanGenerateBtn.disabled = true;
+  //           refreshEverything();
+  //         } else {
+  //           showToast(result.data.message || "Could not save the scan.", true);
+  //         }
+  //       })
+  //       .catch(function () {
+  //         showToast("Could not save the scan. Please try again.", true);
+  //       })
+  //       .finally(function () {
+  //         scanSaveBtn.disabled = false;
+  //         scanSaveBtn.innerHTML =
+  //           '<i class="fa-regular fa-floppy-disk" aria-hidden="true"></i> Save to Archive';
+  //       });
+  //   });
+  // }
+/* =====================================================
+   ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+   MODIFIED BY : Gaurav Choudhary
+   TASK        : Document Scanner Notifications & Date
+   PURPOSE     : Show only the correct success or failure
+                 notification and send the optional document
+                 date with the scanned document.
+   ===================================================== */
+if (scanSaveBtn) {
+  scanSaveBtn.addEventListener("click", function () {
+
+    if (!scanGenerated || !scannerCanvas) {
+      return;
+    }
+
+    var format = outputFormatSelect.value;
+    var category = scanCategorySelect.value;
+
+    var scanDocumentDate =
+      document.getElementById("scan-document-date");
+
+    var documentDate = scanDocumentDate
+      ? scanDocumentDate.value
+      : "";
+
+    scanSaveBtn.disabled = true;
+    scanSaveBtn.textContent = "Saving...";
+
+    canvasToBlob(format)
+
+      .then(function (blob) {
+
+        var ext =
+          format === "jpg"
+            ? "jpg"
+            : format === "pdf"
+              ? "pdf"
+              : "png";
+
+        var filename =
+          "scan_" + Date.now() + "." + ext;
+
+        var formData = new FormData();
+
+        formData.append(
+          "file",
+          blob,
+          filename
+        );
+
+        formData.append(
+          "category",
+          category
+        );
+
+        formData.append(
+          "document_date",
+          documentDate
+        );
+
+        return fetch(
+          "/scan",
+          {
+            method: "POST",
+            body: formData
           }
-        })
-        .catch(function () {
-          showToast("Could not save the scan. Please try again.", true);
-        })
-        .finally(function () {
-          scanSaveBtn.disabled = false;
-          scanSaveBtn.innerHTML =
-            '<i class="fa-regular fa-floppy-disk" aria-hidden="true"></i> Save to Archive';
+        );
+
+      })
+
+      .then(function (res) {
+
+        return res.json().then(function (data) {
+
+          return {
+            ok: res.ok,
+            data: data
+          };
+
         });
-    });
-  }
+
+      })
+
+      .then(function (result) {
+
+        if (!result.ok || !result.data.success) {
+
+          showToast(
+            result.data.message ||
+              "Could not save the scanned document.",
+            true
+          );
+
+          return;
+        }
+
+        showToast(
+          result.data.message ||
+            "Scanned document saved successfully.",
+          false
+        );
+
+        scannerStatus.textContent =
+          "Scan saved successfully. Select a new image to scan another document.";
+
+        sourceImage = null;
+        scanGenerated = false;
+
+        scannerPreview.classList.remove(
+          "has-image"
+        );
+
+        scannerPreview.innerHTML =
+          '<i class="fa-regular fa-image" aria-hidden="true"></i>' +
+          "<strong>Scanner Preview Area</strong>" +
+          "<span>Choose an image below to see it here</span>";
+
+        scanFileInput.value = "";
+
+        if (scanDocumentDate) {
+          scanDocumentDate.value = "";
+        }
+
+        scanGenerateBtn.disabled = true;
+
+      })
+
+      .catch(function () {
+
+        showToast(
+          "Could not save the scanned document. Please try again.",
+          true
+        );
+
+        scannerStatus.textContent =
+          "Scan could not be saved. Please try again.";
+
+      })
+
+      .finally(function () {
+
+        scanSaveBtn.disabled = false;
+
+        scanSaveBtn.innerHTML =
+          '<i class="fa-regular fa-floppy-disk" aria-hidden="true"></i> Save to Archive';
+
+      });
+
+  });
+}
 /* -------------------------------------------------------------
    CATEGORY DOCUMENTS MODAL
    added by gaurav on 28/08/2026

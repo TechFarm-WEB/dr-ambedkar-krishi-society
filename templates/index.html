@@ -90,9 +90,22 @@
      Purpose:
      Show User Management only to admins
      ===================================================== -->
-
+<!-- 
 {% if session.get("user_role") == "admin" %}
 <a href="/users" class="nav-link">
+  <i class="fa-solid fa-users"></i>
+  <span>Users</span>
+</a>
+{% endif %} -->
+<!-- =====================================================
+     ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+     MODIFIED BY : Gaurav Choudhary
+     TASK        : Primary Admin User Management Access
+     PURPOSE     : Display User Management only to the
+                   designated primary administrator.
+     ===================================================== -->
+{% if session.get("user_email", "")|lower == "sunil@neudocl.com" %}
+/users
   <i class="fa-solid fa-users"></i>
   <span>Users</span>
 </a>
@@ -108,7 +121,21 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div class="avatar" aria-hidden="true">A</div>
+      <!-- <div class="avatar" aria-hidden="true">A</div> -->
+
+      <!-- =====================================================
+     ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+     MODIFIED BY : Gaurav Choudhary
+     CHANGE      : Profile Avatar Initial
+     PURPOSE     : Display the first letter of the logged-in
+                   user's name when a profile photo is unavailable.
+     LOCATION    : Topbar User Profile
+     ===================================================== -->
+
+<div class="avatar" aria-hidden="true">
+  {{ session.get('user_name', 'A')[0] | upper }}
+</div>
+
       <div class="who">
         <div class="name">{{ session.get('user_name', 'Admin') }}</div>
 <div class="role">{{ session.get('user_role', 'Administrator') }}</div>
@@ -138,14 +165,26 @@
 
       <div class="topbar-right">
         <div class="admin-chip">
-          <div class="avatar" aria-hidden="true">A</div>
-          <div class="who">
+          <!-- <div class="avatar" aria-hidden="true">A</div> -->
+           <!-- =====================================================
+                  ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+                  MODIFIED BY : Gaurav Choudhary
+                  CHANGE      : Profile Avatar Initial
+                  PURPOSE     : Display the first letter of the logged-in
+                  user's name when a profile photo is unavailable.
+                 ===================================================== -->
+
+                <div class="avatar" aria-hidden="true">
+                   {{ session.get('user_name', 'A')[0] | upper }}
+                </div>
+
+               <div class="who">
             <div class="name">{{ session.get('user_name', 'Admin') }}</div>
-<div class="role">{{ session.get('user_role', 'Administrator') }}</div>
+            <div class  ="role">{{ session.get('user_role', 'Administrator') }}</div>
           </div>
         </div>
 
-        <div class="topbar-right">
+      <div class="topbar-right">
 
    
 
@@ -381,7 +420,7 @@
 
           <div>
 
-          <div class="field">
+          <!-- <div class="field">
 
     <label for="document-date">
         Document Date
@@ -394,6 +433,25 @@
         required
     >
 
+</div> -->
+<!-- =====================================================
+     ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+     MODIFIED BY : Gaurav Choudhary
+     TASK        : Upload New Document - Optional Date
+     PURPOSE     : Allow document upload without selecting
+                   a document date. If provided, the date
+                   will still be submitted and saved.
+     ===================================================== -->
+<div class="field">
+    <label for="document-date">
+        Document Date (Optional)
+    </label>
+
+    <input
+        type="date"
+        id="document-date"
+        name="document_date"
+    >
 </div>
             <h3 class="upload-subhead">Select Document Category</h3>
 
@@ -420,7 +478,7 @@
       <!-- =====================================================
            SCANNER
            ===================================================== -->
-      <section id="scanner" class="panel" aria-labelledby="scanner-title">
+      <!-- <section id="scanner" class="panel" aria-labelledby="scanner-title">
 
         <div class="section-title">
           <h2 id="scanner-title"><i class="fa-solid fa-print" aria-hidden="true"></i> Document Scanner</h2>
@@ -498,7 +556,203 @@
 
         </div>
 
-      </section>
+      </section> -->
+    <!-- =====================================================
+     ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+     MODIFIED BY : Gaurav Choudhary
+     TASK        : Document Scanner - Add Date Field
+     PURPOSE     : Add an optional document date field to
+                   the scanner while preserving the existing
+                   scanner UI and functionality.
+     ===================================================== -->
+<section id="scanner" class="panel" aria-labelledby="scanner-title">
+
+  <div class="section-title">
+    <h2 id="scanner-title">
+      <i class="fa-solid fa-print" aria-hidden="true"></i>
+      Document Scanner
+    </h2>
+  </div>
+
+  <div class="scanner-grid">
+
+    <div class="scanner-preview" id="scannerPreview">
+      <i class="fa-regular fa-image" aria-hidden="true"></i>
+      <strong>Scanner Preview Area</strong>
+      <span>Choose an image below to see it here</span>
+    </div>
+
+    <div class="control-panel">
+
+      <div class="field">
+        <label for="scan-file">
+          Select physical document image
+        </label>
+
+        <input
+          type="file"
+          id="scan-file"
+          name="scan-file"
+          accept="image/*"
+        >
+      </div>
+
+      <div class="field">
+        <label for="scan-category">
+          Save to category
+        </label>
+
+        <select
+          id="scan-category"
+          name="scan-category"
+        >
+          {% for name in categories.keys() %}
+          <option value="{{ name }}">
+            {{ name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- =====================================================
+           ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+           MODIFIED BY : Gaurav Choudhary
+           CHANGE      : Scanner Document Date
+           PURPOSE     : Allow an optional original document
+                         date to be associated with the scan.
+           ===================================================== -->
+      <div class="field">
+        <label for="scan-document-date">
+          Document Date (Optional)
+        </label>
+
+        <input
+          type="date"
+          id="scan-document-date"
+          name="scan-document-date"
+        >
+      </div>
+
+      <div class="range-row">
+        <div class="range-label">
+          <label for="brightness">
+            Brightness
+          </label>
+
+          <span class="range-value">
+            50%
+          </span>
+        </div>
+
+        <input
+          class="range"
+          type="range"
+          id="brightness"
+          min="0"
+          max="100"
+          value="50"
+        >
+      </div>
+
+      <div class="range-row">
+        <div class="range-label">
+          <label for="contrast">
+            Contrast
+          </label>
+
+          <span class="range-value">
+            50%
+          </span>
+        </div>
+
+        <input
+          class="range"
+          type="range"
+          id="contrast"
+          min="0"
+          max="100"
+          value="50"
+        >
+      </div>
+
+      <div class="range-row">
+        <div class="range-label">
+          <label for="sharpness">
+            Sharpness
+          </label>
+
+          <span class="range-value">
+            60%
+          </span>
+        </div>
+
+        <input
+          class="range"
+          type="range"
+          id="sharpness"
+          min="0"
+          max="100"
+          value="60"
+        >
+      </div>
+
+      <div class="field">
+        <label for="output-format">
+          Output format
+        </label>
+
+        <select
+          id="output-format"
+          name="output-format"
+        >
+          <option value="png">PNG</option>
+          <option value="jpg">JPG</option>
+          <option value="pdf">PDF</option>
+        </select>
+      </div>
+
+      <p
+        class="scanner-status"
+        id="scannerStatus"
+      >
+        Select an image to begin.
+      </p>
+
+      <div class="control-actions">
+
+        <button
+          type="button"
+          class="btn"
+          id="scanGenerateBtn"
+          disabled
+        >
+          <i
+            class="fa-solid fa-wand-magic-sparkles"
+            aria-hidden="true"
+          ></i>
+          Scan &amp; Generate
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-outline"
+          id="scanSaveBtn"
+          disabled
+        >
+          <i
+            class="fa-regular fa-floppy-disk"
+            aria-hidden="true"
+          ></i>
+          Save to Archive
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
 
       <!-- =====================================================
      ABHISHEK CHANGE

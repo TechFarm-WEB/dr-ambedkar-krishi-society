@@ -350,6 +350,62 @@ def init_db():
 from zoneinfo import ZoneInfo
 
 
+# def record_document(
+#     filename,
+#     category,
+#     source,
+#     filepath,
+#     filesize,
+#     uploaded_by=None,
+#     document_date=None
+# ):
+
+#     # UTC + 5:30 = IST
+#     ist_timestamp = (
+#         datetime.utcnow() + timedelta(hours=5, minutes=30)
+#     ).isoformat()
+
+#     conn = get_db()
+
+#     conn.execute(
+#         """
+#         INSERT INTO documents
+#             (
+#                 filename,
+#                 category,
+#                 source,
+#                 filepath,
+#                 filesize,
+#                 uploaded_by,
+#                 document_date,
+#                 uploaded_at
+#             )
+#         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+#         """,
+#         (
+#             filename,
+#             category,
+#             source,
+#             filepath,
+#             filesize,
+#             uploaded_by,
+#             document_date,
+#             ist_timestamp
+#         )
+#     )
+
+#     conn.commit()
+#     conn.close()
+
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Improve Document Upload Performance
+# PURPOSE     : Allow document records to use an existing
+#               database connection during bulk uploads,
+#               while preserving existing single-document
+#               upload and scanner functionality.
+# =====================================================
 def record_document(
     filename,
     category,
@@ -357,29 +413,34 @@ def record_document(
     filepath,
     filesize,
     uploaded_by=None,
-    document_date=None
+    document_date=None,
+    conn=None
 ):
 
-    # UTC + 5:30 = IST
     ist_timestamp = (
-        datetime.utcnow() + timedelta(hours=5, minutes=30)
+        datetime.utcnow()
+        + timedelta(hours=5, minutes=30)
     ).isoformat()
 
-    conn = get_db()
+    own_connection = False
+
+    if conn is None:
+        conn = get_db()
+        own_connection = True
 
     conn.execute(
         """
         INSERT INTO documents
-            (
-                filename,
-                category,
-                source,
-                filepath,
-                filesize,
-                uploaded_by,
-                document_date,
-                uploaded_at
-            )
+        (
+            filename,
+            category,
+            source,
+            filepath,
+            filesize,
+            uploaded_by,
+            document_date,
+            uploaded_at
+        )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
@@ -394,9 +455,9 @@ def record_document(
         )
     )
 
-    conn.commit()
-    conn.close()
-
+    if own_connection:
+        conn.commit()
+        conn.close()
 # init_db()
 
 
@@ -745,18 +806,11 @@ def login():
                 session["logged_in"] = True
                 session["user_name"] = user["name"]
                 session["user_role"] = user["role"]
-
-                # =====================================================
-                # ABHISHEK CHANGE
-                # Purpose:
-                # Store logged-in user ID in session
-                # =====================================================
                 session["user_id"] = user["id"]
-                # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Keep user logged in longer
-    # =====================================================
+                session["user_email"] = user["email"]
+
+             
+
                 if remember_me:
                     session.permanent = True
 
@@ -1185,14 +1239,114 @@ def change_role(user_id):
 # UPLOAD DOCUMENT  (Upload New Document panel)
 # =========================================================
 
+# @app.route("/upload", methods=["POST"])
+# def upload():
+
+#     category = request.form.get("category")
+#     files = request.files.getlist("file")
+#     document_date = request.form.get(
+#     "document_date"
+# )
+
+#     if not category:
+#         return jsonify(
+#             success=False,
+#             message="Please select a category."
+#         ), 400
+
+#     conn = get_db()
+
+#     valid_category = conn.execute(
+#         """
+#         SELECT *
+#         FROM categories
+#         WHERE category_name = ?
+#         """,
+#         (category,)
+#     ).fetchone()
+
+#     conn.close()
+
+#     if not valid_category:
+#         return jsonify(
+#             success=False,
+#             message="Invalid category selected."
+#         ), 400
+
+#     valid_files = [f for f in files if f and f.filename]
+
+#     if not valid_files:
+#         return jsonify(
+#             success=False,
+#             message="Please choose at least one file to upload."
+#         ), 400
+
+#     category_folder = os.path.join(
+#     app.config["UPLOAD_FOLDER"],
+#     secure_filename(category)
+#     )
+
+#     os.makedirs(
+#         category_folder,
+#         exist_ok=True
+#     )
+
+#     saved_files = []
+
+#     for file in valid_files:
+
+#         filename = secure_filename(file.filename)
+
+#         if not filename:
+#             continue
+
+#         destination = os.path.join(
+#             category_folder,
+#             filename
+#         )
+
+#         file.save(destination)
+
+#         filesize = os.path.getsize(destination)
+
+#         record_document(
+#     filename=filename,
+#     category=category,
+#     source="upload",
+#     filepath=destination,
+#     filesize=filesize,
+#     uploaded_by=session.get("user_name"),
+#     document_date=document_date
+# )
+#         saved_files.append(filename)
+
+#     if not saved_files:
+#         return jsonify(
+#             success=False,
+#             message="No valid files were uploaded."
+#         ), 400
+
+#     return jsonify(
+#         success=True,
+#         message=f"{len(saved_files)} file(s) uploaded successfully to {category}.",
+#         category=category,
+#         files=saved_files
+#     )
+
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Improve Document Upload Performance
+# PURPOSE     : Save uploaded document records using one
+#               database connection and one transaction,
+#               while preserving existing file processing.
+# =====================================================
 @app.route("/upload", methods=["POST"])
 def upload():
 
     category = request.form.get("category")
     files = request.files.getlist("file")
-    document_date = request.form.get(
-    "document_date"
-)
+    document_date = request.form.get("document_date")
 
     if not category:
         return jsonify(
@@ -1200,26 +1354,11 @@ def upload():
             message="Please select a category."
         ), 400
 
-    conn = get_db()
-
-    valid_category = conn.execute(
-        """
-        SELECT *
-        FROM categories
-        WHERE category_name = ?
-        """,
-        (category,)
-    ).fetchone()
-
-    conn.close()
-
-    if not valid_category:
-        return jsonify(
-            success=False,
-            message="Invalid category selected."
-        ), 400
-
-    valid_files = [f for f in files if f and f.filename]
+    valid_files = [
+        file
+        for file in files
+        if file and file.filename
+    ]
 
     if not valid_files:
         return jsonify(
@@ -1227,68 +1366,189 @@ def upload():
             message="Please choose at least one file to upload."
         ), 400
 
-    category_folder = os.path.join(
-    app.config["UPLOAD_FOLDER"],
-    secure_filename(category)
-    )
+    conn = get_db()
 
-    os.makedirs(
-        category_folder,
-        exist_ok=True
-    )
+    try:
 
-    saved_files = []
+        valid_category = conn.execute(
+            """
+            SELECT *
+            FROM categories
+            WHERE category_name = ?
+            """,
+            (category,)
+        ).fetchone()
 
-    for file in valid_files:
+        if not valid_category:
 
-        filename = secure_filename(file.filename)
+            return jsonify(
+                success=False,
+                message="Invalid category selected."
+            ), 400
 
-        if not filename:
-            continue
-
-        destination = os.path.join(
-            category_folder,
-            filename
+        category_folder = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            secure_filename(category)
         )
 
-        file.save(destination)
+        os.makedirs(
+            category_folder,
+            exist_ok=True
+        )
 
-        filesize = os.path.getsize(destination)
+        saved_files = []
 
-        record_document(
-    filename=filename,
-    category=category,
-    source="upload",
-    filepath=destination,
-    filesize=filesize,
-    uploaded_by=session.get("user_name"),
-    document_date=document_date
-)
-        saved_files.append(filename)
+        for file in valid_files:
 
-    if not saved_files:
+            filename = secure_filename(
+                file.filename
+            )
+
+            if not filename:
+                continue
+
+            destination = os.path.join(
+                category_folder,
+                filename
+            )
+
+            file.save(destination)
+
+            filesize = os.path.getsize(
+                destination
+            )
+
+            record_document(
+                filename=filename,
+                category=category,
+                source="upload",
+                filepath=destination,
+                filesize=filesize,
+                uploaded_by=session.get(
+                    "user_name"
+                ),
+                document_date=document_date,
+                conn=conn
+            )
+
+            saved_files.append(
+                filename
+            )
+
+        if not saved_files:
+
+            conn.rollback()
+
+            return jsonify(
+                success=False,
+                message="No valid files were uploaded."
+            ), 400
+
+        conn.commit()
+
+        return jsonify(
+            success=True,
+            message=(
+                f"{len(saved_files)} file(s) "
+                f"uploaded successfully to {category}."
+            ),
+            category=category,
+            files=saved_files
+        )
+
+    except Exception as error:
+
+        conn.rollback()
+
+        print(
+            "Upload error:",
+            error
+        )
+
         return jsonify(
             success=False,
-            message="No valid files were uploaded."
-        ), 400
+            message="Unable to upload document."
+        ), 500
 
-    return jsonify(
-        success=True,
-        message=f"{len(saved_files)} file(s) uploaded successfully to {category}.",
-        category=category,
-        files=saved_files
-    )
+    finally:
 
+        conn.close()
 
 # =========================================================
 # SCAN & SAVE  (Document Scanner panel)
 # =========================================================
 
+# @app.route("/scan", methods=["POST"])
+# def scan_save():
+
+#     category = request.form.get("category")
+#     file = request.files.get("file")
+
+#     if not category or category not in CATEGORIES:
+#         return jsonify(
+#             success=False,
+#             message="Please select a valid category before saving."
+#         ), 400
+
+#     if not file or not file.filename:
+#         return jsonify(
+#             success=False,
+#             message="No scanned image was provided."
+#         ), 400
+
+#     category_folder = os.path.join(
+#         app.config["UPLOAD_FOLDER"],
+#         CATEGORIES[category]
+#     )
+
+#     os.makedirs(
+#         category_folder,
+#         exist_ok=True
+#     )
+
+#     filename = secure_filename(file.filename)
+
+#     destination = os.path.join(
+#         category_folder,
+#         filename
+#     )
+
+#     file.save(destination)
+
+#     filesize = os.path.getsize(destination)
+
+#     record_document(
+#         filename=filename,
+#         category=category,
+#         source="scanner",
+#         filepath=destination,
+#         filesize=filesize
+#     )
+
+#     return jsonify(
+#         success=True,
+#         message=f"Scanned document saved to {category}.",
+#         category=category,
+#         filename=filename
+#     )
+
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Document Scanner - Save Document Date
+# PURPOSE     : Capture the optional document date sent
+#               from the scanner and associate it with
+#               the scanned document in the database.
+# =====================================================
 @app.route("/scan", methods=["POST"])
 def scan_save():
 
     category = request.form.get("category")
     file = request.files.get("file")
+
+    document_date = request.form.get(
+        "document_date"
+    )
 
     if not category or category not in CATEGORIES:
         return jsonify(
@@ -1312,7 +1572,9 @@ def scan_save():
         exist_ok=True
     )
 
-    filename = secure_filename(file.filename)
+    filename = secure_filename(
+        file.filename
+    )
 
     destination = os.path.join(
         category_folder,
@@ -1321,21 +1583,26 @@ def scan_save():
 
     file.save(destination)
 
-    filesize = os.path.getsize(destination)
+    filesize = os.path.getsize(
+        destination
+    )
 
     record_document(
         filename=filename,
         category=category,
         source="scanner",
         filepath=destination,
-        filesize=filesize
+        filesize=filesize,
+        uploaded_by=session.get("user_name"),
+        document_date=document_date
     )
 
     return jsonify(
         success=True,
-        message=f"Scanned document saved to {category}.",
+        message="Scanned document saved successfully.",
         category=category,
-        filename=filename
+        filename=filename,
+        document_date=document_date
     )
 
 
