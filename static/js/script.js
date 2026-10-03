@@ -434,137 +434,533 @@ function refreshStats() {
   var cardList = document.getElementById("documentsCardList");
   var searchForm = document.getElementById("searchForm");
   var searchResultInfo = document.getElementById("searchResultInfo");
+  // =====================================================
+// ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+// MODIFIED BY : Gaurav Choudhary
+// TASK        : Delete Document using POST
+// PURPOSE     : Match Flask POST-only delete route.
+// =====================================================
 
- function renderDocuments(docs) {
+// function deleteDocument(docId) {
 
+//   if (!confirm("Delete this document?")) {
+//     return false;
+//   }
 
-    if (!docs.length) {
-      tableBody.innerHTML =
-        '<tr class="state-row"><td colspan="7">' +
-        '<i class="fa-regular fa-folder-open" aria-hidden="true"></i>&nbsp; No documents found.</td></tr>';
-      cardList.innerHTML = '<p class="list-empty">No documents found.</p>';
-      return;
-    }
+//   fetch("/delete/" + docId, {
+//     method: "POST"
+//   })
+//     .then(function (response) {
 
-    tableBody.innerHTML = docs
-      .map(function (doc) {
-        return (
-  "<tr>" +
+//       if (response.ok) {
+//         window.location.reload();
+//         return;
+//       }
 
-  '<td><input type="checkbox" class="doc-checkbox" value="' +
-  doc.id +
-  '"></td>' +
+//       throw new Error(
+//         "Delete failed with status " + response.status
+//       );
+//     })
+//     .catch(function (error) {
 
-  "<td>" +
-  escapeHtml(doc.filename) +
-  "</td>" +
-          "<td>" +
-          escapeHtml(doc.category) +
-          "</td>" +
-          /* Display upload date and exact time */
-          "<td>" +
-escapeHtml(doc.uploaded_by || "Unknown") +
-"</td>" +
+//       console.error(
+//         "Document delete error:",
+//         error
+//       );
 
-"<td>" +
-formatDate(doc.uploaded_at) +
-"</td>" +
-          '<td><span class="status">Active</span></td>' +
-          /* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Enable document download from dashboard
-   ===================================================== */
-   /* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Enable document preview from dashboard
-   ===================================================== */
+//       alert("Unable to delete document.");
+//     });
 
-'<td>' +
+//   return false;
+// }
+function deleteDocument(docId) {
 
-'<a href="/preview/' +
-doc.id +
-'" class="btn btn-outline">👁 Preview</a> ' +
-
-'<a href="/download/' +
-doc.id +
-'" class="btn btn-outline">Download</a>' +
-
-/* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Show Delete button only for admin users
-   ===================================================== */
-
-(USER_ROLE === "admin"
-    ? ' <a href="/delete/' +
-      doc.id +
-      '" class="btn btn-outline" onclick="return confirm(\'Delete this document?\')">Delete</a>'
-    : '') +
-
-'</td>' +
-          "</tr>"
-        );
-      })
-      .join("");
-
-    cardList.innerHTML = docs
-      .map(function (doc) {
-        return (
-          '<div class="doc-card">' +
-          '<div class="doc-name">' +
-          escapeHtml(doc.filename) +
-          "</div>" +
-          '<div class="doc-meta">' +
-          '<span><i class="fa-solid fa-layer-group" aria-hidden="true"></i>' +
-          escapeHtml(doc.category) +
-          "</span>" +
-          /* Mobile card date + time */
-          '<span><i class="fa-regular fa-calendar" aria-hidden="true"></i>' +
-          formatDate(doc.uploaded_at) +
-          "</span>" +
-          '<span class="status">Active</span>' +
-          "</div>" +
-          /* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Enable document download on mobile cards
-   ===================================================== */
-
-'<a href="/preview/' +
-doc.id +
-'" class="btn btn-outline btn-block">👁 Preview</a>' +
-
-'<a href="/download/' +
-doc.id +
-'" class="btn btn-outline btn-block">Download</a>' +
-
-/* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Show Delete button on mobile cards for admin users
-   ===================================================== */
-   /* =====================================================
-   ABHISHEK CHANGE
-   Purpose:
-   Enable document preview on mobile cards
-   ===================================================== */
-
-'<a href="/preview/' +
-doc.id +
-'" class="btn btn-outline btn-block">👁 Preview</a>' +
-
-(USER_ROLE === "admin"
-    ? '<a href="/delete/' +
-      doc.id +
-      '" class="btn btn-outline btn-block" onclick="return confirm(\'Delete this document?\')">Delete</a>'
-    : '') +
-          "</div>"
-        );
-      })
-      .join("");
+  if (!confirm("Delete this document?")) {
+    return false;
   }
+
+  fetch("/delete/" + docId, {
+    method: "POST"
+  })
+    .then(function (response) {
+
+      if (response.ok) {
+        window.location.reload();
+        return;
+      }
+
+      throw new Error(
+        "Delete failed with status " + response.status
+      );
+    })
+    .catch(function (error) {
+
+      console.error(
+        "Document delete error:",
+        error
+      );
+
+      alert("Unable to delete document.");
+    });
+
+  return false;
+}
+document.addEventListener("click", function (event) {
+
+  var deleteLink = event.target.closest('a[href^="/delete/"]');
+
+  if (!deleteLink) {
+    return;
+  }
+
+  event.preventDefault();
+
+  var href = deleteLink.getAttribute("href");
+
+  if (!href) {
+    return;
+  }
+
+  var docId = href.split("/").pop();
+
+  if (!docId) {
+    return;
+  }
+
+  deleteDocument(docId);
+});
+// function renderDocuments(docs) {
+
+//   if (!docs.length) {
+
+//     tableBody.innerHTML =
+//       '<tr class="state-row"><td colspan="7">' +
+//       '<i class="fa-regular fa-folder-open" aria-hidden="true"></i>' +
+//       '&nbsp; No documents found.</td></tr>';
+
+//     cardList.innerHTML =
+//       '<p class="list-empty">No documents found.</p>';
+
+//     return;
+//   }
+
+
+//   // =====================================================
+//   // DESKTOP TABLE
+//   // =====================================================
+
+//   tableBody.innerHTML = docs
+//     .map(function (doc) {
+
+//       return (
+
+//         "<tr>" +
+
+//         '<td>' +
+//         '<input type="checkbox" class="doc-checkbox" value="' +
+//         doc.id +
+//         '">' +
+//         '</td>' +
+
+//         '<td>' +
+//         escapeHtml(doc.filename) +
+//         '</td>' +
+
+//         '<td>' +
+//         escapeHtml(doc.category) +
+//         '</td>' +
+
+//         '<td>' +
+//         escapeHtml(doc.uploaded_by || "Unknown") +
+//         '</td>' +
+
+//         '<td>' +
+//         formatDate(doc.uploaded_at) +
+//         '</td>' +
+
+//         '<td>' +
+//         '<span class="status">Active</span>' +
+//         '</td>' +
+
+//         '<td>' +
+
+//         '/preview/' +
+//         doc.id +
+//         '' +
+//         '👁 Preview' +
+//         '</a> ' +
+
+//         '/download/' +
+//         doc.id +
+//         '' +
+//         'Download' +
+//         '</a>' +
+
+//         (
+//           USER_ROLE === "admin"
+
+//             ? ' #">' +
+//               'Delete' +
+//               '</a>'
+
+//             : ''
+//         ) +
+
+//         '</td>' +
+
+//         '</tr>'
+
+//       );
+
+//     })
+//     .join("");
+
+
+//   // =====================================================
+//   // MOBILE DOCUMENT CARDS
+//   // =====================================================
+
+//   cardList.innerHTML = docs
+//     .map(function (doc) {
+
+//       return (
+
+//         '<div class="doc-card">' +
+
+//         '<div class="doc-name">' +
+//         escapeHtml(doc.filename) +
+//         '</div>' +
+
+//         '<div class="doc-meta">' +
+
+//         '<span>' +
+//         '<i class="fa-solid fa-layer-group" aria-hidden="true"></i>' +
+//         escapeHtml(doc.category) +
+//         '</span>' +
+
+//         '<span>' +
+//         '<i class="fa-regular fa-calendar" aria-hidden="true"></i>' +
+//         formatDate(doc.uploaded_at) +
+//         '</span>' +
+
+//         '<span class="status">' +
+//         'Active' +
+//         '</span>' +
+
+//         '</div>' +
+
+//         // Preview
+//         '/preview/' +
+//         doc.id +
+//         '' +
+//         '👁 Preview' +
+//         '</a>' +
+
+//         // Download
+//         '/download/' +
+//         doc.id +
+//         '' +
+//         'Download' +
+//         '</a>' +
+
+//         // Delete - Admin only
+//         (
+//           USER_ROLE === "admin"
+
+//             ? '#">' +
+//               'Delete' +
+//               '</a>'
+
+//             : ''
+//         ) +
+
+//         '</div>'
+
+//       );
+
+//     })
+//     .join("");
+// } 
+function renderDocuments(docs) {
+
+  if (!docs.length) {
+
+    tableBody.innerHTML =
+      '<tr class="state-row"><td colspan="7">' +
+      '<i class="fa-regular fa-folder-open" aria-hidden="true"></i>' +
+      '&nbsp; No documents found.</td></tr>';
+
+    cardList.innerHTML =
+      '<p class="list-empty">No documents found.</p>';
+
+    return;
+  }
+
+
+  // =====================================================
+  // DESKTOP TABLE
+  // =====================================================
+
+  tableBody.innerHTML = docs
+    .map(function (doc) {
+
+      return (
+
+        '<tr>' +
+
+        '<td>' +
+        '<input type="checkbox" class="doc-checkbox" value="' +
+        doc.id +
+        '">' +
+        '</td>' +
+
+        '<td>' +
+        escapeHtml(doc.filename) +
+        '</td>' +
+
+        '<td>' +
+        escapeHtml(doc.category) +
+        '</td>' +
+
+        '<td>' +
+        escapeHtml(doc.uploaded_by || "Unknown") +
+        '</td>' +
+
+        '<td>' +
+        formatDate(doc.uploaded_at) +
+        '</td>' +
+
+        '<td>' +
+        '<span class="status">Active</span>' +
+        '</td>' +
+
+        '<td>' +
+
+        '/preview/' +
+        doc.id +
+        '' +
+        '👁 Preview' +
+        '</a> ' +
+
+        '/download/' +
+        doc.id +
+        '' +
+        'Download' +
+        '</a>' +
+
+        (
+          USER_ROLE === "admin"
+            ? ' #">' +
+              'Delete' +
+              '</a>'
+            : ''
+        ) +
+
+        '</td>' +
+
+        '</tr>'
+
+      );
+
+    })
+    .join("");
+
+
+  // =====================================================
+  // MOBILE DOCUMENT CARDS
+  // =====================================================
+
+  cardList.innerHTML = docs
+    .map(function (doc) {
+
+      return (
+
+        '<div class="doc-card">' +
+
+        '<div class="doc-name">' +
+        escapeHtml(doc.filename) +
+        '</div>' +
+
+        '<div class="doc-meta">' +
+
+        '<span>' +
+        '<i class="fa-solid fa-layer-group" aria-hidden="true"></i>' +
+        escapeHtml(doc.category) +
+        '</span>' +
+
+        '<span>' +
+        '<i class="fa-regular fa-calendar" aria-hidden="true"></i>' +
+        formatDate(doc.uploaded_at) +
+        '</span>' +
+
+        '<span class="status">Active</span>' +
+
+        '</div>' +
+
+
+        // Preview
+        '/preview/' +
+        doc.id +
+        '' +
+        '👁 Preview' +
+        '</a>' +
+
+
+        // Download
+        '/download/' +
+        doc.id +
+        '' +
+        'Download' +
+        '</a>' +
+
+
+        // Delete - Admin Only
+        (
+          USER_ROLE === "admin"
+            ? '#">' +
+              'Delete' +
+              '</a>'
+            : ''
+        ) +
+
+        '</div>'
+
+      );
+
+    })
+    .join("");
+}
+
+//  function renderDocuments(docs) {
+
+
+//     if (!docs.length) {
+//       tableBody.innerHTML =
+//         '<tr class="state-row"><td colspan="7">' +
+//         '<i class="fa-regular fa-folder-open" aria-hidden="true"></i>&nbsp; No documents found.</td></tr>';
+//       cardList.innerHTML = '<p class="list-empty">No documents found.</p>';
+//       return;
+//     }
+
+//     tableBody.innerHTML = docs
+//       .map(function (doc) {
+//         return (
+//   "<tr>" +
+
+//   '<td><input type="checkbox" class="doc-checkbox" value="' +
+//   doc.id +
+//   '"></td>' +
+
+//   "<td>" +
+//   escapeHtml(doc.filename) +
+//   "</td>" +
+//           "<td>" +
+//           escapeHtml(doc.category) +
+//           "</td>" +
+//           /* Display upload date and exact time */
+//           "<td>" +
+// escapeHtml(doc.uploaded_by || "Unknown") +
+// "</td>" +
+
+// "<td>" +
+// formatDate(doc.uploaded_at) +
+// "</td>" +
+//           '<td><span class="status">Active</span></td>' +
+//           /* =====================================================
+//    ABHISHEK CHANGE
+//    Purpose:
+//    Enable document download from dashboard
+//    ===================================================== */
+//    /* =====================================================
+//    ABHISHEK CHANGE
+//    Purpose:
+//    Enable document preview from dashboard
+//    ===================================================== */
+
+// '<td>' +
+
+// '<a href="/preview/' +
+// doc.id +
+// '" class="btn btn-outline">👁 Preview</a> ' +
+
+// '<a href="/download/' +
+// doc.id +
+// '" class="btn btn-outline">Download</a>' +
+
+// /* =====================================================
+//    ABHISHEK CHANGE
+//    Purpose:
+//    Show Delete button only for admin users
+//    ===================================================== */
+
+// (USER_ROLE === "admin"
+//     ? ' <a href="/delete/' +
+//       doc.id +
+//       '" class="btn btn-outline" onclick="return confirm(\'Delete this document?\')">Delete</a>'
+//     : '') +
+
+// '</td>' +
+//           "</tr>"
+//         );
+//       })
+//       .join("");
+
+//     cardList.innerHTML = docs
+//       .map(function (doc) {
+//         return (
+//           '<div class="doc-card">' +
+//           '<div class="doc-name">' +
+//           escapeHtml(doc.filename) +
+//           "</div>" +
+//           '<div class="doc-meta">' +
+//           '<span><i class="fa-solid fa-layer-group" aria-hidden="true"></i>' +
+//           escapeHtml(doc.category) +
+//           "</span>" +
+//           /* Mobile card date + time */
+//           '<span><i class="fa-regular fa-calendar" aria-hidden="true"></i>' +
+//           formatDate(doc.uploaded_at) +
+//           "</span>" +
+//           '<span class="status">Active</span>' +
+//           "</div>" +
+//           /* =====================================================
+//    ABHISHEK CHANGE
+//    Purpose:
+//    Enable document download on mobile cards
+//    ===================================================== */
+
+// '<a href="/preview/' +
+// doc.id +
+// '" class="btn btn-outline btn-block">👁 Preview</a>' +
+
+// '<a href="/download/' +
+// doc.id +
+// '" class="btn btn-outline btn-block">Download</a>' +
+
+// /* =====================================================
+//    ABHISHEK CHANGE
+//    Purpose:
+//    Show Delete button on mobile cards for admin users
+//    ===================================================== */
+//    /* =====================================================
+//    ABHISHEK CHANGE
+//    Purpose:
+//    Enable document preview on mobile cards
+//    ===================================================== */
+
+// '<a href="/preview/' +
+// doc.id +
+// '" class="btn btn-outline btn-block">👁 Preview</a>' +
+
+// (USER_ROLE === "admin"
+//     ? '<a href="/delete/' +
+//       doc.id +
+//       '" class="btn btn-outline btn-block" onclick="return confirm(\'Delete this document?\')">Delete</a>'
+//     : '') +
+//           "</div>"
+//         );
+//       })
+//       .join("");
+//   }
 
   function loadDocuments(params) {
 
