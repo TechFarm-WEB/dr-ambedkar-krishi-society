@@ -480,18 +480,33 @@ function deleteDocument(docId) {
   }
 
   fetch("/delete/" + docId, {
-    method: "POST"
+    method: "POST",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest"
+    }
   })
     .then(function (response) {
 
-      if (response.ok) {
-        window.location.reload();
-        return;
+      if (!response.ok) {
+        throw new Error(
+          "Delete failed with status " + response.status
+        );
       }
 
-      throw new Error(
-        "Delete failed with status " + response.status
+      showToast(
+        "Document deleted successfully.",
+        false
       );
+
+      // Refresh documents without reloading dashboard
+      loadDocuments(null);
+
+      // Refresh dashboard counters
+      refreshStats();
+
+      // Refresh recent activity
+      refreshActivity();
+
     })
     .catch(function (error) {
 
@@ -500,35 +515,15 @@ function deleteDocument(docId) {
         error
       );
 
-      alert("Unable to delete document.");
+      showToast(
+        "Unable to delete document. Please try again.",
+        true
+      );
+
     });
 
   return false;
 }
-document.addEventListener("click", function (event) {
-
-  var deleteLink = event.target.closest('a[href^="/delete/"]');
-
-  if (!deleteLink) {
-    return;
-  }
-
-  event.preventDefault();
-
-  var href = deleteLink.getAttribute("href");
-
-  if (!href) {
-    return;
-  }
-
-  var docId = href.split("/").pop();
-
-  if (!docId) {
-    return;
-  }
-
-  deleteDocument(docId);
-});
 // function renderDocuments(docs) {
 
 //   if (!docs.length) {
@@ -1099,7 +1094,7 @@ function renderDocuments(docs) {
           (USER_ROLE === "admin"
             ? ' <a href="/delete/' +
               doc.id +
-              '" class="btn btn-outline" onclick="return confirm(\'Delete this document?\')">Delete</a>'
+              '" class="btn btn-outline">Delete</a>'
             : '') +
           '</td>' +
 
