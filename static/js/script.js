@@ -524,6 +524,43 @@ function deleteDocument(docId) {
 
   return false;
 }
+
+document.addEventListener(
+  "click",
+  function (event) {
+
+    var deleteLink =
+      event.target.closest(
+        'a[href^="/delete/"]'
+      );
+
+    if (!deleteLink) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    var href =
+      deleteLink.getAttribute("href");
+
+    if (!href) {
+      return;
+    }
+
+    var docId =
+      href.split("/").pop();
+
+    if (!docId) {
+      return;
+    }
+
+    deleteDocument(docId);
+
+  },
+  true
+);
 // function renderDocuments(docs) {
 
 //   if (!docs.length) {
