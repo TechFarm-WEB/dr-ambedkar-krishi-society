@@ -493,23 +493,94 @@ function deleteDocument(docId) {
         );
       }
 
+      // Delete successfully completed.
       showToast(
         "Document deleted successfully.",
         false
       );
 
-      // Refresh documents without reloading dashboard
-      loadDocuments(null);
+      // Remove deleted row from currently open
+      // Search Results popup.
+      try {
 
-      // Refresh dashboard counters
-      refreshStats();
+        if (
+          categoryDocumentsBody &&
+          categoryDocumentsModal &&
+          categoryDocumentsModal.classList.contains("is-visible")
+        ) {
 
-      // Refresh recent activity
-      refreshActivity();
+          var deleteLink =
+            categoryDocumentsBody.querySelector(
+              'a[href="/delete/' + docId + '"]'
+            );
+
+          if (deleteLink) {
+
+            var row = deleteLink.closest("tr");
+
+            if (row) {
+              row.remove();
+            }
+
+          }
+
+          var remainingRows =
+            categoryDocumentsBody.querySelectorAll(
+              "tbody tr"
+            );
+
+          if (remainingRows.length === 0) {
+
+            categoryDocumentsBody.innerHTML =
+              '<p class="list-empty">' +
+              'No documents found.' +
+              '</p>';
+
+          }
+
+        }
+
+      } catch (uiError) {
+
+        console.error(
+          "Popup refresh error:",
+          uiError
+        );
+
+      }
+
+      // Refresh dashboard independently.
+      try {
+        loadDocuments(null);
+      } catch (uiError) {
+        console.error(
+          "Document list refresh error:",
+          uiError
+        );
+      }
+
+      try {
+        refreshStats();
+      } catch (uiError) {
+        console.error(
+          "Stats refresh error:",
+          uiError
+        );
+      }
+
+      try {
+        refreshActivity();
+      } catch (uiError) {
+        console.error(
+          "Activity refresh error:",
+          uiError
+        );
+      }
 
     })
     .catch(function (error) {
 
+      // This should represent actual request/delete failure.
       console.error(
         "Document delete error:",
         error
