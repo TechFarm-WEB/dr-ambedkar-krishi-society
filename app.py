@@ -34,6 +34,9 @@
 # =====================================================
 
 import os
+import boto3
+import uuid
+from io import BytesIO
 from flask import (
     Flask,
     render_template,
@@ -43,6 +46,7 @@ from flask import (
     jsonify,
     session,
     flash,
+
 
     # =====================================================
     # ABHISHEK CHANGE
@@ -83,7 +87,53 @@ app.permanent_session_lifetime = timedelta(days=30)
 
 # UPLOAD_FOLDER = "uploads"
 # DATABASE = "documents.db"
-UPLOAD_FOLDER = "uploads"
+# UPLOAD_FOLDER = "uploads"
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Shared Document Storage
+# PURPOSE     : Use production persistent storage for
+#               uploaded and scanned documents while
+#               preserving local development support.
+# =====================================================
+UPLOAD_FOLDER = os.environ.get(
+    "UPLOAD_FOLDER",
+    "uploads"
+)
+
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Cloudflare R2 Document Storage
+# PURPOSE     : Configure secure persistent object storage
+#               for uploaded and scanned documents.
+# =====================================================
+
+R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID")
+R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY")
+R2_ENDPOINT_URL = os.environ.get("R2_ENDPOINT_URL")
+R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME")
+
+
+def get_r2_client():
+
+    if not all([
+        R2_ACCESS_KEY_ID,
+        R2_SECRET_ACCESS_KEY,
+        R2_ENDPOINT_URL,
+        R2_BUCKET_NAME
+    ]):
+        raise RuntimeError(
+            "Cloudflare R2 configuration is incomplete."
+        )
+
+    return boto3.client(
+        service_name="s3",
+        endpoint_url=R2_ENDPOINT_URL,
+        aws_access_key_id=R2_ACCESS_KEY_ID,
+        aws_secret_access_key=R2_SECRET_ACCESS_KEY,
+        region_name="auto"
+    )
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -1341,12 +1391,177 @@ def change_role(user_id):
 #               database connection and one transaction,
 #               while preserving existing file processing.
 # =====================================================
+# @app.route("/upload", methods=["POST"])
+# def upload():
+# # ISSUE ID : ENHANCEMENT-0006-WEBTEST
+# # MODIFIED BY : Gaurav Choudhary
+# # PURPOSE : Capture an optional custom document name.
+#     category = request.form.get("category")
+#     files = request.files.getlist("file")
+#     document_date = request.form.get("document_date")
+#     document_name = request.form.get("document_name", "").strip()
+
+#     if not category:
+#         return jsonify(
+#             success=False,
+#             message="Please select a category."
+#         ), 400
+
+#     valid_files = [
+#         file
+#         for file in files
+#         if file and file.filename
+#     ]
+
+#     if not valid_files:
+#         return jsonify(
+#             success=False,
+#             message="Please choose at least one file to upload."
+#         ), 400
+
+#     conn = get_db()
+
+#     try:
+
+#         valid_category = conn.execute(
+#             """
+#             SELECT *
+#             FROM categories
+#             WHERE category_name = ?
+#             """,
+#             (category,)
+#         ).fetchone()
+
+#         if not valid_category:
+
+#             return jsonify(
+#                 success=False,
+#                 message="Invalid category selected."
+#             ), 400
+
+#         category_folder = os.path.join(
+#             app.config["UPLOAD_FOLDER"],
+#             secure_filename(category)
+#         )
+
+#         os.makedirs(
+#             category_folder,
+#             exist_ok=True
+#         )
+
+#         saved_files = []
+
+#         for file in valid_files:
+
+#             filename = secure_filename(
+#                 file.filename
+#             )
+
+#             if not filename:
+#                 continue
+
+#             destination = os.path.join(
+#                 category_folder,
+#                 filename
+#             )
+
+#             file.save(destination)
+
+#             filesize = os.path.getsize(
+#                 destination
+#             )
+
+#             # record_document(
+#             #     filename=filename,
+#             #     category=category,
+#             #     source="upload",
+#             #     filepath=destination,
+#             #     filesize=filesize,
+#             #     uploaded_by=session.get(
+#             #         "user_name"
+#             #     ),
+#             #     document_date=document_date,
+#             #     conn=conn
+#             # )
+#             # =====================================================
+# # ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# # MODIFIED BY : Gaurav Choudhary
+# # TASK        : Optional Document Name
+# # PURPOSE     : Save the custom document name when entered.
+# #               Otherwise preserve the original filename.
+# # =====================================================
+#             display_filename = document_name if document_name else filename
+
+#             record_document(
+#                    filename=display_filename,
+#                    category=category,
+#                    source="upload",
+#                    filepath=destination,
+#                    filesize=filesize,
+#                    uploaded_by=session.get("user_name"),
+#                    document_date=document_date,
+#                    conn=conn
+#             )
+
+#             saved_files.append(
+#                 filename
+#             )
+
+#         if not saved_files:
+
+#             conn.rollback()
+
+#             return jsonify(
+#                 success=False,
+#                 message="No valid files were uploaded."
+#             ), 400
+
+#         conn.commit()
+
+#         return jsonify(
+#             success=True,
+#             message=(
+#                 f"{len(saved_files)} file(s) "
+#                 f"uploaded successfully to {category}."
+#             ),
+#             category=category,
+#             files=saved_files
+#         )
+
+#     except Exception as error:
+
+#         conn.rollback()
+
+#         print(
+#             "Upload error:",
+#             error
+#         )
+
+#         return jsonify(
+#             success=False,
+#             message="Unable to upload document."
+#         ), 500
+
+#     finally:
+
+#         conn.close()
+
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Cloudflare R2 Document Upload
+# PURPOSE     : Store uploaded documents permanently in
+#               Cloudflare R2 while preserving document
+#               metadata in PostgreSQL.
+# =====================================================
+
 @app.route("/upload", methods=["POST"])
 def upload():
 
     category = request.form.get("category")
     files = request.files.getlist("file")
     document_date = request.form.get("document_date")
+    document_name = request.form.get("document_name", "").strip()
 
     if not category:
         return jsonify(
@@ -1367,9 +1582,13 @@ def upload():
         ), 400
 
     conn = get_db()
+    uploaded_r2_keys = []
 
     try:
 
+        # -------------------------------------------------
+        # Validate category
+        # -------------------------------------------------
         valid_category = conn.execute(
             """
             SELECT *
@@ -1380,53 +1599,102 @@ def upload():
         ).fetchone()
 
         if not valid_category:
-
             return jsonify(
                 success=False,
                 message="Invalid category selected."
             ), 400
 
-        category_folder = os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            secure_filename(category)
-        )
-
-        os.makedirs(
-            category_folder,
-            exist_ok=True
-        )
+        # -------------------------------------------------
+        # Connect to Cloudflare R2
+        # -------------------------------------------------
+        r2 = get_r2_client()
 
         saved_files = []
 
+        # -------------------------------------------------
+        # Process each uploaded file
+        # -------------------------------------------------
         for file in valid_files:
 
-            filename = secure_filename(
-                file.filename
-            )
+            filename = secure_filename(file.filename)
 
             if not filename:
                 continue
 
-            destination = os.path.join(
-                category_folder,
-                filename
+            # ---------------------------------------------
+            # Create unique R2 filename
+            # ---------------------------------------------
+            unique_filename = (
+                str(uuid.uuid4())
+                + "_"
+                + filename
             )
 
-            file.save(destination)
+            safe_category = secure_filename(category)
 
-            filesize = os.path.getsize(
-                destination
+            # ---------------------------------------------
+            # R2 object key
+            #
+            # Example:
+            # uploads/Audit/uuid_report.pdf
+            # ---------------------------------------------
+            r2_object_key = (
+                "uploads/"
+                + safe_category
+                + "/"
+                + unique_filename
             )
 
+            # ---------------------------------------------
+            # Calculate uploaded file size
+            # ---------------------------------------------
+            file.stream.seek(
+                0,
+                os.SEEK_END
+            )
+
+            filesize = file.stream.tell()
+
+            file.stream.seek(0)
+
+            # ---------------------------------------------
+            # Upload actual file to Cloudflare R2
+            # ---------------------------------------------
+            r2.upload_fileobj(
+                file.stream,
+                R2_BUCKET_NAME,
+                r2_object_key,
+                ExtraArgs={
+                    "ContentType":
+                        file.mimetype
+                        or "application/octet-stream"
+                }
+            )
+
+            uploaded_r2_keys.append(
+                r2_object_key
+            )
+
+            # ---------------------------------------------
+            # Optional Document Name
+            # ---------------------------------------------
+            if document_name:
+                display_filename = document_name
+            else:
+                display_filename = filename
+
+            # ---------------------------------------------
+            # Save metadata in PostgreSQL
+            #
+            # filepath now contains the R2 object key.
+            # ---------------------------------------------
             record_document(
-                filename=filename,
+                filename=display_filename,
                 category=category,
                 source="upload",
-                filepath=destination,
+                filepath=r2_object_key,
                 filesize=filesize,
-                uploaded_by=session.get(
-                    "user_name"
-                ),
+                uploaded_by=session.get("user_name"),
                 document_date=document_date,
                 conn=conn
             )
@@ -1435,6 +1703,9 @@ def upload():
                 filename
             )
 
+        # -------------------------------------------------
+        # No valid file processed
+        # -------------------------------------------------
         if not saved_files:
 
             conn.rollback()
@@ -1444,6 +1715,9 @@ def upload():
                 message="No valid files were uploaded."
             ), 400
 
+        # -------------------------------------------------
+        # Commit document metadata
+        # -------------------------------------------------
         conn.commit()
 
         return jsonify(
@@ -1461,9 +1735,33 @@ def upload():
         conn.rollback()
 
         print(
-            "Upload error:",
+            "R2 upload error:",
             error
         )
+
+        # -------------------------------------------------
+        # Remove uploaded R2 objects if database operation
+        # fails after R2 upload.
+        # -------------------------------------------------
+        if uploaded_r2_keys:
+
+            try:
+
+                r2 = get_r2_client()
+
+                for r2_key in uploaded_r2_keys:
+
+                    r2.delete_object(
+                        Bucket=R2_BUCKET_NAME,
+                        Key=r2_key
+                    )
+
+            except Exception as cleanup_error:
+
+                print(
+                    "R2 cleanup error:",
+                    cleanup_error
+                )
 
         return jsonify(
             success=False,
@@ -1540,6 +1838,80 @@ def upload():
 #               from the scanner and associate it with
 #               the scanned document in the database.
 # =====================================================
+# @app.route("/scan", methods=["POST"])
+# def scan_save():
+
+#     category = request.form.get("category")
+#     file = request.files.get("file")
+
+#     document_date = request.form.get(
+#         "document_date"
+#     )
+
+#     if not category or category not in CATEGORIES:
+#         return jsonify(
+#             success=False,
+#             message="Please select a valid category before saving."
+#         ), 400
+
+#     if not file or not file.filename:
+#         return jsonify(
+#             success=False,
+#             message="No scanned image was provided."
+#         ), 400
+
+#     category_folder = os.path.join(
+#         app.config["UPLOAD_FOLDER"],
+#         CATEGORIES[category]
+#     )
+
+#     os.makedirs(
+#         category_folder,
+#         exist_ok=True
+#     )
+
+#     filename = secure_filename(
+#         file.filename
+#     )
+
+#     destination = os.path.join(
+#         category_folder,
+#         filename
+#     )
+
+#     file.save(destination)
+
+#     filesize = os.path.getsize(
+#         destination
+#     )
+
+#     record_document(
+#         filename=filename,
+#         category=category,
+#         source="scanner",
+#         filepath=destination,
+#         filesize=filesize,
+#         uploaded_by=session.get("user_name"),
+#         document_date=document_date
+#     )
+
+#     return jsonify(
+#         success=True,
+#         message="Scanned document saved successfully.",
+#         category=category,
+#         filename=filename,
+#         document_date=document_date
+#     )
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Cloudflare R2 Scanner Storage
+# PURPOSE     : Store scanned documents permanently in
+#               Cloudflare R2 instead of local storage.
+#               Preserve category, document date and
+#               uploaded-by information.
+# =====================================================
+
 @app.route("/scan", methods=["POST"])
 def scan_save():
 
@@ -1550,61 +1922,165 @@ def scan_save():
         "document_date"
     )
 
+    # -------------------------------------------------
+    # Validate category
+    # -------------------------------------------------
+
     if not category or category not in CATEGORIES:
+
         return jsonify(
             success=False,
             message="Please select a valid category before saving."
         ), 400
 
+    # -------------------------------------------------
+    # Validate scanned file
+    # -------------------------------------------------
+
     if not file or not file.filename:
+
         return jsonify(
             success=False,
             message="No scanned image was provided."
         ), 400
 
-    category_folder = os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        CATEGORIES[category]
-    )
-
-    os.makedirs(
-        category_folder,
-        exist_ok=True
-    )
-
     filename = secure_filename(
         file.filename
     )
 
-    destination = os.path.join(
-        category_folder,
-        filename
+    if not filename:
+
+        return jsonify(
+            success=False,
+            message="Invalid scanned document filename."
+        ), 400
+
+    # -------------------------------------------------
+    # Generate unique R2 filename
+    # -------------------------------------------------
+
+    unique_filename = (
+        str(uuid.uuid4())
+        + "_"
+        + filename
     )
 
-    file.save(destination)
-
-    filesize = os.path.getsize(
-        destination
+    safe_category = secure_filename(
+        CATEGORIES[category]
     )
 
-    record_document(
-        filename=filename,
-        category=category,
-        source="scanner",
-        filepath=destination,
-        filesize=filesize,
-        uploaded_by=session.get("user_name"),
-        document_date=document_date
+    # -------------------------------------------------
+    # Cloudflare R2 object key
+    #
+    # Example:
+    # scans/Audit/uuid_scan.jpg
+    # -------------------------------------------------
+
+    r2_object_key = (
+        "scans/"
+        + safe_category
+        + "/"
+        + unique_filename
     )
 
-    return jsonify(
-        success=True,
-        message="Scanned document saved successfully.",
-        category=category,
-        filename=filename,
-        document_date=document_date
-    )
+    try:
 
+        # -------------------------------------------------
+        # Calculate scanned file size
+        # -------------------------------------------------
+
+        file.stream.seek(
+            0,
+            os.SEEK_END
+        )
+
+        filesize = file.stream.tell()
+
+        file.stream.seek(0)
+
+        # -------------------------------------------------
+        # Upload scanned document to Cloudflare R2
+        # -------------------------------------------------
+
+        r2 = get_r2_client()
+
+        r2.upload_fileobj(
+            file.stream,
+            R2_BUCKET_NAME,
+            r2_object_key,
+            ExtraArgs={
+                "ContentType":
+                    file.mimetype
+                    or "application/octet-stream"
+            }
+        )
+
+        # -------------------------------------------------
+        # Save metadata in PostgreSQL
+        #
+        # filepath now stores the R2 object key.
+        # -------------------------------------------------
+
+        try:
+
+            record_document(
+                filename=filename,
+                category=category,
+                source="scanner",
+                filepath=r2_object_key,
+                filesize=filesize,
+                uploaded_by=session.get(
+                    "user_name"
+                ),
+                document_date=document_date
+            )
+
+        except Exception:
+
+            # ---------------------------------------------
+            # Database save failed.
+            # Remove R2 object to avoid orphan files.
+            # ---------------------------------------------
+
+            try:
+
+                r2.delete_object(
+                    Bucket=R2_BUCKET_NAME,
+                    Key=r2_object_key
+                )
+
+            except Exception as cleanup_error:
+
+                print(
+                    "R2 scanner cleanup error:",
+                    cleanup_error
+                )
+
+            raise
+
+        # -------------------------------------------------
+        # Success response
+        # -------------------------------------------------
+
+        return jsonify(
+            success=True,
+            message="Scanned document saved successfully.",
+            category=category,
+            filename=filename,
+            document_date=document_date
+        )
+
+    except Exception as error:
+
+        print(
+            "R2 scanner save error:",
+            error
+        )
+
+        return jsonify(
+            success=False,
+            message="Unable to save scanned document."
+        ), 500
 
 # =========================================================
 # OPEN CATEGORY  (unchanged — filesystem-backed listing)
@@ -1773,6 +2249,15 @@ def api_categories():
 # Preview documents in browser
 # =========================================================
 
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Cloudflare R2 Preview and Download
+# PURPOSE     : Retrieve uploaded documents from R2 so
+#               authenticated users can preview/download
+#               them from any device.
+# =====================================================
+
 
 @app.route("/preview/<int:doc_id>")
 def preview_document(doc_id):
@@ -1782,24 +2267,155 @@ def preview_document(doc_id):
 
     conn = get_db()
 
-    doc = conn.execute(
-        """
-        SELECT *
-        FROM documents
-        WHERE id = ?
-        """,
-        (doc_id,)
-    ).fetchone()
+    try:
 
-    conn.close()
+        doc = conn.execute(
+            """
+            SELECT *
+            FROM documents
+            WHERE id = ?
+            """,
+            (doc_id,)
+        ).fetchone()
+
+    finally:
+
+        conn.close()
 
     if not doc:
-        return "Document not found"
+        return "Document not found", 404
 
-    return send_file(
-        doc["filepath"],
-        as_attachment=False
-    )
+    try:
+
+        r2 = get_r2_client()
+
+        r2_object = r2.get_object(
+            Bucket=R2_BUCKET_NAME,
+            Key=doc["filepath"]
+        )
+
+        file_data = r2_object["Body"].read()
+
+        content_type = r2_object.get(
+            "ContentType",
+            "application/octet-stream"
+        )
+
+        return send_file(
+            BytesIO(file_data),
+            mimetype=content_type,
+            as_attachment=False,
+            download_name=doc["filename"]
+        )
+
+    except Exception as error:
+
+        print(
+            "R2 preview error:",
+            error
+        )
+
+        return (
+            "Unable to preview document.",
+            500
+        )
+
+
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Cloudflare R2 Document Download
+# PURPOSE     : Download documents directly from R2
+#               instead of the local server filesystem.
+# =====================================================
+
+
+@app.route("/download/<int:doc_id>")
+def download_document(doc_id):
+
+    if not session.get("logged_in"):
+        return redirect("/login")
+
+    conn = get_db()
+
+    try:
+
+        doc = conn.execute(
+            """
+            SELECT *
+            FROM documents
+            WHERE id = ?
+            """,
+            (doc_id,)
+        ).fetchone()
+
+    finally:
+
+        conn.close()
+
+    if not doc:
+        return "Document not found", 404
+
+    try:
+
+        r2 = get_r2_client()
+
+        r2_object = r2.get_object(
+            Bucket=R2_BUCKET_NAME,
+            Key=doc["filepath"]
+        )
+
+        file_data = r2_object["Body"].read()
+
+        content_type = r2_object.get(
+            "ContentType",
+            "application/octet-stream"
+        )
+
+        return send_file(
+            BytesIO(file_data),
+            mimetype=content_type,
+            as_attachment=True,
+            download_name=doc["filename"]
+        )
+
+    except Exception as error:
+
+        print(
+            "R2 download error:",
+            error
+        )
+
+        return (
+            "Unable to download document.",
+            500
+        )
+# @app.route("/preview/<int:doc_id>")
+# def preview_document(doc_id):
+
+#     if not session.get("logged_in"):
+#         return redirect("/login")
+
+#     conn = get_db()
+
+#     doc = conn.execute(
+#         """
+#         SELECT *
+#         FROM documents
+#         WHERE id = ?
+#         """,
+#         (doc_id,)
+#     ).fetchone()
+
+#     conn.close()
+
+#     if not doc:
+#         return "Document not found"
+
+#     return send_file(
+#         doc["filepath"],
+#         as_attachment=False
+#     )
 
 # =========================================================
 # ABHISHEK CHANGE
@@ -1807,126 +2423,234 @@ def preview_document(doc_id):
 # Allow logged-in users to download uploaded documents
 # =========================================================
 
-@app.route("/download/<int:doc_id>")
-def download_document(doc_id):
+# @app.route("/download/<int:doc_id>")
+# def download_document(doc_id):
 
-    # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Block downloads without login
-    # =====================================================
+#     # =====================================================
+#     # ABHISHEK CHANGE
+#     # Purpose:
+#     # Block downloads without login
+#     # =====================================================
 
-    if not session.get("logged_in"):
-        return redirect("/login")
+#     if not session.get("logged_in"):
+#         return redirect("/login")
 
-    conn = get_db()
+#     conn = get_db()
 
-    # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Get document details from database
-    # =====================================================
+#     # =====================================================
+#     # ABHISHEK CHANGE
+#     # Purpose:
+#     # Get document details from database
+#     # =====================================================
 
-    doc = conn.execute(
-        "SELECT * FROM documents WHERE id = ?",
-        (doc_id,)
-    ).fetchone()
+#     doc = conn.execute(
+#         "SELECT * FROM documents WHERE id = ?",
+#         (doc_id,)
+#     ).fetchone()
 
-    conn.close()
+#     conn.close()
 
-    # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Handle invalid document IDs
-    # =====================================================
+#     # =====================================================
+#     # ABHISHEK CHANGE
+#     # Purpose:
+#     # Handle invalid document IDs
+#     # =====================================================
 
-    if not doc:
-        return "Document not found", 404
+#     if not doc:
+#         return "Document not found", 404
 
-    # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Download the actual uploaded file
-    # =====================================================
+#     # =====================================================
+#     # ABHISHEK CHANGE
+#     # Purpose:
+#     # Download the actual uploaded file
+#     # =====================================================
 
-    return send_file(
-        doc["filepath"],
-        as_attachment=True,
-        download_name=doc["filename"]
-    )
-# =========================================================
-# ABHISHEK CHANGE
-# Purpose:
-# Allow admin users to delete documents
-# =========================================================
+#     return send_file(
+#         doc["filepath"],
+#         as_attachment=True,
+#         download_name=doc["filename"]
+#     )
+# # =========================================================
+# # ABHISHEK CHANGE
+# # Purpose:
+# # Allow admin users to delete documents
+# # =========================================================
 
-@app.route("/delete/<int:doc_id>")
+# @app.route("/delete/<int:doc_id>")
+# def delete_document(doc_id):
+
+#     # =====================================================
+#     # ABHISHEK CHANGE
+#     # Purpose:
+#     # Block access without login
+#     # =====================================================
+
+#     if not session.get("logged_in"):
+#         return redirect("/login")
+
+#     # =====================================================
+#     # ABHISHEK CHANGE
+#     # Purpose:
+#     # Allow only admin users
+#     # =====================================================
+
+#     if session.get("user_role") != "admin":
+#         return "Access Denied", 403
+
+#     conn = get_db()
+
+#     doc = conn.execute(
+#         "SELECT * FROM documents WHERE id = ?",
+#         (doc_id,)
+#     ).fetchone()
+
+#     if not doc:
+#         conn.close()
+#         return "Document not found", 404
+
+
+    
+    
+#     if not doc:
+#         conn.close()
+#         return "Document not found", 404
+
+#     # =====================================================
+#     # ABHISHEK CHANGE
+#     # Purpose:
+#     # Delete physical file from storage
+#     # =====================================================
+
+#     try:
+#         if os.path.exists(doc["filepath"]):
+#             os.remove(doc["filepath"])
+#     except Exception as e:
+#         print("File delete error:", e)
+
+#     # =====================================================
+#     # ABHISHEK CHANGE
+#     # Purpose:
+#     # Delete document record from database
+#     # =====================================================
+
+#     conn.execute(
+#         "DELETE FROM documents WHERE id = ?",
+#         (doc_id,)
+#     )
+
+#     conn.commit()
+#     conn.close()
+
+#     return redirect("/dashboard")
+
+# =====================================================
+# ISSUE ID    : ENHANCEMENT-0006-WEBTEST
+# MODIFIED BY : Gaurav Choudhary
+# TASK        : Cloudflare R2 Document Delete
+# PURPOSE     : Delete the actual document from R2 and
+#               remove its metadata from PostgreSQL.
+# =====================================================
+
+@app.route("/delete/<int:doc_id>", methods=["POST"])
 def delete_document(doc_id):
 
-    # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Block access without login
-    # =====================================================
+    # -------------------------------------------------
+    # Login required
+    # -------------------------------------------------
 
     if not session.get("logged_in"):
         return redirect("/login")
 
-    # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Allow only admin users
-    # =====================================================
+    # -------------------------------------------------
+    # Admin access required
+    # -------------------------------------------------
 
     if session.get("user_role") != "admin":
         return "Access Denied", 403
 
     conn = get_db()
 
-    doc = conn.execute(
-        "SELECT * FROM documents WHERE id = ?",
-        (doc_id,)
-    ).fetchone()
-
-    if not doc:
-        conn.close()
-        return "Document not found", 404
-
-
-    
-    
-    if not doc:
-        conn.close()
-        return "Document not found", 404
-
-    # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Delete physical file from storage
-    # =====================================================
-
     try:
-        if os.path.exists(doc["filepath"]):
-            os.remove(doc["filepath"])
-    except Exception as e:
-        print("File delete error:", e)
 
-    # =====================================================
-    # ABHISHEK CHANGE
-    # Purpose:
-    # Delete document record from database
-    # =====================================================
+        # -------------------------------------------------
+        # Get document information
+        # -------------------------------------------------
 
-    conn.execute(
-        "DELETE FROM documents WHERE id = ?",
-        (doc_id,)
-    )
+        doc = conn.execute(
+            """
+            SELECT *
+            FROM documents
+            WHERE id = ?
+            """,
+            (doc_id,)
+        ).fetchone()
 
-    conn.commit()
-    conn.close()
+        if not doc:
+            return "Document not found", 404
 
-    return redirect("/dashboard")
+        r2_object_key = doc["filepath"]
 
+        # -------------------------------------------------
+        # Delete actual document from Cloudflare R2
+        # -------------------------------------------------
+
+        try:
+
+            r2 = get_r2_client()
+
+            r2.delete_object(
+                Bucket=R2_BUCKET_NAME,
+                Key=r2_object_key
+            )
+
+        except Exception as r2_error:
+
+            print(
+                "R2 document delete error:",
+                r2_error
+            )
+
+            conn.rollback()
+
+            return (
+                "Unable to delete document from storage.",
+                500
+            )
+
+        # -------------------------------------------------
+        # Delete database record only after R2 deletion
+        # succeeds
+        # -------------------------------------------------
+
+        conn.execute(
+            """
+            DELETE FROM documents
+            WHERE id = ?
+            """,
+            (doc_id,)
+        )
+
+        conn.commit()
+
+        return redirect("/dashboard")
+
+    except Exception as error:
+
+        conn.rollback()
+
+        print(
+            "Document delete error:",
+            error
+        )
+
+        return (
+            "Unable to delete document.",
+            500
+        )
+
+    finally:
+
+        conn.close()
 
 # =========================================================
 # API — DOCUMENT LIST / SEARCH
@@ -2030,7 +2754,9 @@ def api_documents():
 #     ])
 
 
-@app.route("/api/archive")
+
+
+
 def api_archive():
 
     query = request.args.get(
