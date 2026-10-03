@@ -841,21 +841,16 @@ function renderDocuments(docs) {
 
         '/preview/' +
         doc.id +
-        '' +
-        '👁 Preview' +
-        '</a> ' +
+        '👁 Preview</a> ' +
 
         '/download/' +
         doc.id +
-        '' +
-        'Download' +
-        '</a>' +
+        'Download</a>' +
 
         (
           USER_ROLE === "admin"
             ? ' #">' +
-              'Delete' +
-              '</a>'
+              'Delete</a>'
             : ''
         ) +
 
